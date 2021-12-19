@@ -1,0 +1,128 @@
+{
+	"appName": "MyVulkanApp",
+	"engineName": "MyVulkanEngine",
+	"libName": "vulkan-1.dll",
+	"applicationVersion": "0.1.0.0",
+	"engineVersion": "0.1.0.0",
+	"apiVersion": "0.1.2.0",
+	"WindowSettings": {
+		"width": 1600,
+		"height": 1600,
+		"fullScreen": true,
+		"fullScreenWidth": 3840,
+		"fullScreenHeight": 2160
+	},
+	"GraphicObjects": [
+		{
+			"name": "plane",
+			"vertices": [
+				{
+					"position": [-1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 1.0 ]
+				},
+				{
+					"position": [-1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 1.0 ]
+				}
+			],
+			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "tacho",
+			"vertices": [
+				{
+					"position": [-1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 1.0 ]
+				},
+				{
+					"position": [-1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 1.0 ]
+				}
+			],
+			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/powermeter.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "FlatPerlin2d",
+			"vertices": [
+				{
+					"position": [-1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0, 1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 0.0 ]
+				},
+				{
+					"position": [ 1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 1.0, 1.0 ]
+				},
+				{
+					"position": [-1.0,-1.0, 0.0 ],
+					"normal": [ 0.0, 0.0, 1.0 ],
+					"color": [ 1.0, 0.0, 1.0 ],
+					"texCoords": [ 0.0, 1.0 ]
+				}
+			],
+			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlin2d.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		}
+	]
+}
