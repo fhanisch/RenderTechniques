@@ -11,12 +11,15 @@
 #define KEY_UP VK_UP
 #define KEY_DOWN VK_DOWN
 #define KEY_SHIFT VK_SHIFT
+#define KEY_CONTROL VK_CONTROL
 #define KEY_A 0x41
 #define KEY_D 0x44
 #define KEY_W 0x57
 #define KEY_S 0x53
 #define KEY_X 0x58
 #define KEY_Y 0x59
+#define KEY_R 0x52
+#define KEY_T 0x54
 
 extern PFN_vkCreateDescriptorPool vkCreateDescriptorPool;
 extern PFN_vkDestroyDescriptorPool vkDestroyDescriptorPool;
@@ -26,7 +29,6 @@ extern PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
 extern PFN_vkEndCommandBuffer vkEndCommandBuffer;
 extern PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass;
 extern PFN_vkCmdEndRenderPass vkCmdEndRenderPass;
-extern PFN_vkCmdPushConstants vkCmdPushConstants;
 extern PFN_vkCmdBindIndexBuffer vkCmdBindIndexBuffer;
 extern PFN_vkCmdBindVertexBuffers vkCmdBindVertexBuffers;
 extern PFN_vkCmdBindPipeline vkCmdBindPipeline;
@@ -44,6 +46,7 @@ RenderScene::RenderScene(VulkanSetup* _vkSetup, json& _graphicObjects) {
 	vkSetup = _vkSetup;
 	graphicObjects = _graphicObjects;
 	createDescriptorPool();
+	createGeometryData();
 	createGraphicObjects();
 	createVertexBuffer();
 	createIndexBuffer();
@@ -54,7 +57,7 @@ RenderScene::~RenderScene() {
 	vkFreeCommandBuffers(vkSetup->getDevice(), vkSetup->getCommandPool(), (uint32_t)commandBuffers.size(), commandBuffers.data());
 	delete indexBuffer;
 	delete vertexBuffer;
-	for (uint32_t i = 0; i < graphicObjects.size(); i++) {
+	for (uint32_t i = 0; i < obj.size(); i++) {
 		delete obj[i];
 	}
 	vkDestroyDescriptorPool(vkSetup->getDevice(), descriptorPool, nullptr);
@@ -63,16 +66,16 @@ RenderScene::~RenderScene() {
 void RenderScene::createDescriptorPool() {
 	VkDescriptorPoolSize poolSize[2] = {};
 	poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize[0].descriptorCount = (static_cast<uint32_t>(graphicObjects.size()) + 1) * 2;
+	poolSize[0].descriptorCount = (static_cast<uint32_t>(graphicObjects.size())) * 2;
 	poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSize[1].descriptorCount = static_cast<uint32_t>(graphicObjects.size()) + 1;
+	poolSize[1].descriptorCount = static_cast<uint32_t>(graphicObjects.size());
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = 2;
 	poolInfo.pPoolSizes = poolSize;
-	poolInfo.maxSets = static_cast<uint32_t>(graphicObjects.size()) + 1;
+	poolInfo.maxSets = static_cast<uint32_t>(graphicObjects.size());
 
 	if (vkCreateDescriptorPool(vkSetup->getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 		std::cout << "Failed to create descriptor pool!\n";
@@ -81,45 +84,42 @@ void RenderScene::createDescriptorPool() {
 	std::cout << "Descriptor pool created.\n";
 }
 
+void RenderScene::createGeometryData() {
+	geoData.createData("Plane", GEO_PLANE);
+	geoData.createData("Star", GEO_STAR);
+	geoData.createData("Perlin1D", GEO_MESH_1D, 1001);
+	geoData.createData("Sphere", GEO_MESH_2D, 101);
+	geoData.createData("CurvePatches", GEO_CURVE_PATCHES);
+	geoData.createData("1D-Patches", GEO_PATCH_1D, 101);
+	geoData.createData("Cube", GEO_CUBE);
+	geoData.createData("CubeSphere", GEO_CUBE_SPHERE);
+}
+
 void RenderScene::createGraphicObjects() {
-	Vertex vertex;
+	Descriptor d;
 	std::cout << "Number of GraphicObjects: " << graphicObjects.size() << std::endl;
-	obj = new RenderObject*[graphicObjects.size()];
 	for (uint32_t i = 0; i < graphicObjects.size(); i++) {
 		json gobj = graphicObjects[i];
 		std::string name = gobj["name"].get<std::string>();
-		std::cout << "Object 1: " << name << std::endl;
-		obj[i] = new RenderObject(vkSetup, descriptorPool, gobj, mView);
-		obj[i]->setVertexOffet(vertices.size() * sizeof(Vertex));
-		obj[i]->setFirstIndex((uint32_t)indices.size());
-		json verts = gobj["vertices"];
-		for (uint32_t i = 0; i < verts.size(); i++) {
-			std::vector<float> pos = verts[i]["position"].get<std::vector<float>>();
-			std::vector<float> normal = verts[i]["normal"].get<std::vector<float>>();
-			std::vector<float> color = verts[i]["color"].get<std::vector<float>>();
-			std::vector<float> texCoords = verts[i]["texCoords"].get<std::vector<float>>();
-			memcpy(&vertex.pos, pos.data(), pos.size() * sizeof(float));
-			memcpy(&vertex.normal, normal.data(), normal.size() * sizeof(float));
-			memcpy(&vertex.color, color.data(), color.size() * sizeof(float));
-			memcpy(&vertex.texCoords, texCoords.data(), texCoords.size() * sizeof(float));
-			vertices.push_back(vertex);
-		}
-		std::vector<uint16_t> inds = gobj["indices"].get<std::vector<uint16_t>>();
-		obj[i]->setIndexCount((uint32_t)inds.size());
-		for (uint32_t i = 0; i < inds.size(); i++) {
-			indices.push_back(inds[i]);
-		}
+		std::cout << "Object " << i + 1 << ": " << name << std::endl;
+		GeometryForm form = gobj["GeometryForm"];
+		RenderObject* o = new RenderObject(vkSetup, descriptorPool, gobj, &mView);
+		d = geoData[form];
+		o->setVertexOffet(d.vertexOffset);
+		o->setFirstIndex(d.firstIndex);
+		o->setIndexCount(d.indexCount);
+		obj.push_back(o);
 	}
 }
 
 void RenderScene::createVertexBuffer() {
 	vertexBuffer = new Buffer(vkSetup->getPhysicalDevice(), vkSetup->getDevice(), vkSetup->getCommandPool(), vkSetup->getQueue());
-	vertexBuffer->createDeviceLocalBuffer(vertices.data(), vertices.size()*sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+	vertexBuffer->createDeviceLocalBuffer(geoData.getVertices(), geoData.getVerticesSize() * sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
 void RenderScene::createIndexBuffer() {
 	indexBuffer = new Buffer(vkSetup->getPhysicalDevice(), vkSetup->getDevice(), vkSetup->getCommandPool(), vkSetup->getQueue());
-	indexBuffer->createDeviceLocalBuffer(indices.data(), indices.size()*sizeof(uint16_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);	
+	indexBuffer->createDeviceLocalBuffer(geoData.getIndices(), geoData.getIndicesSize() * sizeof(uint16_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
 void RenderScene::createCommandBuffers() {
@@ -163,7 +163,7 @@ void RenderScene::createCommandBuffers() {
 				VkBuffer vB[] = { vertexBuffer->getBuffer() };
 				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-				for (uint32_t j = 0; j < graphicObjects.size(); j++) {
+				for (uint32_t j = 0; j < obj.size(); j++) {
 					obj[j]->createCommands(commandBuffers[i], vB);
 				}
 /*
@@ -187,41 +187,137 @@ void RenderScene::createCommandBuffers() {
 	std::cout << "Command buffers created.\n";
 }
 
-void RenderScene::updateUniformBuffers() {
-	for (uint32_t i = 0; i < graphicObjects.size(); i++) {
-		obj[i]->updateUniformBuffer();
+void RenderScene::assembleScene() {
+	for (int i = 0; i < obj.size(); i++) {
+		if (obj[i]->getName() == "Square") square = new Square(obj[i]);
+		else if (obj[i]->getName() == "Star") star = new Star(obj[i]);
+		else if (obj[i]->getName() == "Tacho") tacho = new Tacho(obj[i]);
+		else if (obj[i]->getName() == "FilledCircle") filledCircle = new FilledCircle(obj[i]);
+		else if (obj[i]->getName() == "FlatPerlin2d") flatPerlin2d = new FlatPerlin2d(obj[i]);
+		else if (obj[i]->getName() == "Perlin1D") perlin1D = new Perlin1D(obj[i]);
+		else if (obj[i]->getName() == "PerlinCircle") perlinCircle = new PerlinCircle(obj[i]);
+		else if (obj[i]->getName() == "Welle") welle = new Welle(obj[i]);
+		else if (obj[i]->getName() == "CurveTessellator") curveTessellator = new CurveTessellator(obj[i]);
+		else if (obj[i]->getName() == "Perlin1dTessellator") perlin1dTessellator = new Perlin1dTessellator(obj[i]);
+		else if (obj[i]->getName() == "Plane") {
+			plane = new Plane(obj[i]);
+			plane->obj->setViewMatrix(&mView3D);
+		}
+		else if (obj[i]->getName() == "Sphere") {
+			sphere = new Sphere(obj[i]);
+			sphere->obj->setViewMatrix(&mView3D);
+		}
+		else if (obj[i]->getName() == "TestObject") {
+			testObj = new TestObject(obj[i]);
+			testObj->obj->setViewMatrix(&mView3D);
+		}
+		else if (obj[i]->getName() == "Cube") {
+			cube = new Cube(obj[i]);
+			cube->obj->setViewMatrix(&mView3D);
+		}
+		else if (obj[i]->getName() == "CubeSphere") {
+			cubeSphere = new CubeSphere(obj[i]);
+			cubeSphere->obj->setViewMatrix(&mView3D);
+		}
+		else if (obj[i]->getName() == "Planet") {
+			planet = new Planet(obj[i]);
+			planet->obj->setViewMatrix(&mView3D);
+		}
 	}
 }
 
-void RenderScene::camMotion() {
-	static float phi = 0.0f;
-	static float x = 0.0f;
-	static float x2 = 0.0f;
+void RenderScene::updateUniformBuffers() {
+	for (uint32_t i = 0; i < obj.size(); i++) {
+		if (obj[i]->update || updateAll) {
+			obj[i]->updateUniformBuffer();
+			obj[i]->update = false;
+		}
+	}
+	updateAll = false;
+}
 
-	if (key[KEY_A]) {
-		phi -= 0.005f;
-		mView.rotZ(phi);
-	}
-	if (key[KEY_D]) {
-		phi += 0.005f;
-		mView.rotZ(phi);
-	}
-	if (key[KEY_LEFT] && !key[KEY_SHIFT]) {
-		x -= 0.001f;
-		obj[1]->mModel.translate(Vec(x, 0.0f, 0.0f, 1.0f));
-	}
-	if (key[KEY_RIGHT] && !key[KEY_SHIFT]) {
-		x += 0.001f;
-		obj[1]->mModel.translate(Vec(x, 0.0f, 0.0f, 1.0f));
-	}
+void RenderScene::camMotion() {	
+	static float posX = 0.0f;
+	static float posY = 0.0f;
+	float deltaT = 0.02f;
+	float deltaR = 0.01f;
+	float dPhi = 0.0f;
+	float dTheta = 0.0f;
+	Matrix t, rx, ry, o;
+
+
+	/* 2D Cam-Motion */
 	if (key[KEY_LEFT] && key[KEY_SHIFT]) {
-		x2 -= 0.001f;
-		obj[2]->mModel.translate(Vec(x2, 0.0f, 0.0f, 1.0f));
+		posX += deltaT;
+		updateAll = true;
 	}
 	if (key[KEY_RIGHT] && key[KEY_SHIFT]) {
-		x2 += 0.001f;
-		obj[2]->mModel.translate(Vec(x2, 0.0f, 0.0f, 1.0f));
+		posX -= deltaT;
+		updateAll = true;
 	}
+	if(key[KEY_UP] && key[KEY_SHIFT]) {
+		posY += deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_DOWN] && key[KEY_SHIFT]) {
+		posY -= deltaT;
+		updateAll = true;
+	}
+	if (updateAll) mView.translate(Vector(posX, posY, 0.0f, 1.0f));
+
+	/* 3D Cam-Motion */
+	if (key[KEY_A]) {
+		t[3][0] = -deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_D]) {
+		t[3][0] = deltaT;
+		updateAll = true;
+	}
+	if(key[KEY_W]) {
+		t[3][2] = -deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_S]) {
+		t[3][2] = deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_X]) {
+		t[3][1] = -deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_Y]) {
+		t[3][1] = deltaT;
+		updateAll = true;
+	}
+	if (key[KEY_LEFT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+		dPhi = deltaR;
+		updateAll = true;
+	}
+	if (key[KEY_RIGHT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+		dPhi = -deltaR;
+		updateAll = true;
+	}
+	if (key[KEY_UP] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+		dTheta = -deltaR;
+		updateAll = true;
+	}
+	if (key[KEY_DOWN] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+		dTheta = deltaR;
+		updateAll = true;
+	}
+	if (updateAll) {
+		o = cam1.orientation();
+		cam1 = cam1.position() * ry.rotY(dPhi) * o * rx.rotX(dTheta) * t;
+		mView3D = cam1.invert();
+	}
+
+	square->motion();
+	filledCircle->motion();
+	star->motion();
+	perlinCircle->motion();
+	welle->motion();
+	if (key[KEY_SPACE]) createCommandBuffers();
 }
 
 #undef max

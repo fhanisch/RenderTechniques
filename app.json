@@ -14,34 +14,8 @@
 	},
 	"GraphicObjects": [
 		{
-			"name": "plane",
-			"vertices": [
-				{
-					"position": [-1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 1.0 ]
-				},
-				{
-					"position": [-1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 1.0 ]
-				}
-			],
-			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"name": "Square",
+			"GeometryForm": 2,
 			"shader": {
 				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
 				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test.frag.spv"
@@ -51,34 +25,8 @@
 			}
 		},
 		{
-			"name": "tacho",
-			"vertices": [
-				{
-					"position": [-1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 1.0 ]
-				},
-				{
-					"position": [-1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 1.0 ]
-				}
-			],
-			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"name": "Tacho",
+			"GeometryForm": 2,
 			"shader": {
 				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
 				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/powermeter.frag.spv"
@@ -88,40 +36,166 @@
 			}
 		},
 		{
+			"name": "FilledCircle",
+			"GeometryForm": 2,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/circleFilled.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
 			"name": "FlatPerlin2d",
-			"vertices": [
-				{
-					"position": [-1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0, 1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 0.0 ]
-				},
-				{
-					"position": [ 1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 1.0, 1.0 ]
-				},
-				{
-					"position": [-1.0,-1.0, 0.0 ],
-					"normal": [ 0.0, 0.0, 1.0 ],
-					"color": [ 1.0, 0.0, 1.0 ],
-					"texCoords": [ 0.0, 1.0 ]
-				}
-			],
-			"indices": [ 0, 1, 2, 2, 3, 0 ],
+			"GeometryForm": 2,
 			"shader": {
 				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
 				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlin2d.frag.spv"
 			},
 			"texture": {
 				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Star",
+			"GeometryForm": 3,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Perlin1D",
+			"GeometryForm": 6,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlin1d.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "PerlinCircle",
+			"GeometryForm": 6,
+			"PushConstants": true,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlinCircle.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Welle",
+			"GeometryForm": 6,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/welle.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "CurveTessellator",
+			"GeometryForm": 8,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/curveTessellator.vert.spv",
+				"tessellationControlShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/curveTessellator.tesc.spv",
+				"tessellationEvaluationShader": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/curveTessellator.tese.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/curveTessellator.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Perlin1dTessellator",
+			"GeometryForm": 9,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/perlin1dTessellator.vert.spv",
+				"tessellationControlShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlin1dTessellator.tesc.spv",
+				"tessellationEvaluationShader": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlin1dTessellator.tese.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/curveTessellator.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Plane",
+			"GeometryForm": 2,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/schachbrett.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Sphere",
+			"GeometryForm": 7,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/sphere.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "TestObject",
+			"GeometryForm": 7,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/test_shader.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Cube",
+			"GeometryForm": 4,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/cube.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "CubeSphere",
+			"GeometryForm": 10,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/cubesphere.vert.spv",
+				"tessellationControlShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/cubesphere.tesc.spv",
+				"tessellationEvaluationShader": "C:/Home/Entwicklung/MyC++Apps/Vulkan/cubesphere.tese.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Planet",
+			"GeometryForm": 10,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet.vert.spv",
+				"tessellationControlShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet.tesc.spv",
+				"tessellationEvaluationShader": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet.tese.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/moon.png"
 			}
 		}
 	]

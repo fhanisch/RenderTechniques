@@ -27,20 +27,23 @@ class Shader;
 class Texture;
 
 class RenderObject {
+	std::string name;
 	VulkanSetup* vkSetup;
 	VkDescriptorPool descriptorPool;
 	uint64_t vertexOffset;
 	uint32_t indexCount;
 	uint32_t firstIndex;
 	Shader* vertexShader;
+	Shader* tessellationControlShader;
+	Shader* tessellationEvaluationShader;
 	Shader* fragmentShader;
-	vec4 color;
 	Texture* texture;
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	uint32_t stride;
 	std::vector<VkFormat> formats;
 	std::vector<uint32_t> offsets;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-	std::vector< VkPushConstantRange> pushConstantRange;
+	std::vector<VkPushConstantRange> pushConstantRange;
 	VkVertexInputBindingDescription bindingDescription;
 	VkPrimitiveTopology topology;
 	VkPipelineTessellationStateCreateInfo* pTessellationStateCreateInfo;
@@ -49,22 +52,34 @@ class RenderObject {
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 	VkDescriptorSet descriptorSet;
-	Matrix& mView;
+	Matrix* mView;
+	struct PushConstants {
+		float seed_u;
+		float seed_v;
+	} pushConstants;
 	void getAttributeDescriptions();
-	void getBindingDescription(uint32_t stride);
+	void getBindingDescription();
+	void createTessellationStateCreateInfo(uint32_t patchControlPoints);
+	void createPushConstantRange(VkShaderStageFlags shaderStageFlags, uint32_t size);
 	void createUniformBuffer();
 	void createPipelineLayout();
 	void createGraphicsPipeline();
 	void createDescriptorSet();
 public:
+	VkExtent2D swapChainExtent;
+	bool update = true;
 	Matrix mModel;
 	Matrix mProj;
-	RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPool, json& gobj, Matrix& mView);
+	Vector myValue;
+	RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPool, json& gobj, Matrix* mView);
 	~RenderObject();
 	void createCommands(VkCommandBuffer cmdBuffer, VkBuffer* vertexBuffer);
 	void updateUniformBuffer();
 	/* Setter */
+	std::string& getName();
 	void setVertexOffet(uint64_t _vertexOffset);
 	void setIndexCount(uint32_t _indexCount);
 	void setFirstIndex(uint32_t _firstIndex);
+	void setPushConstants(float seed_u, float seed_v);
+	void setViewMatrix(Matrix* _mView);
 };

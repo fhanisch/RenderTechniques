@@ -64,10 +64,12 @@ int App::run() {
 	if (bStartApp) {
 		vkSetup.init();
 		RenderScene scene(&vkSetup, graphicObjects);
+		scene.assembleScene();
 		window->showWindow();
-		while (!window->checkMessage()) {
-			scene.updateUniformBuffers();
+		scene.updateUniformBuffers();
+		while (!window->checkMessage()) {			
 			scene.camMotion();
+			scene.updateUniformBuffers();
 			scene.drawFrame();
 		}
 	}
@@ -125,8 +127,19 @@ int main(int argc, char** argv) {
 
 	checkArguments(argc, argv);
 
-	Matrix m;
+	Matrix m, a;
 	m[3][3] = 0.12345f;
+	m.print();
+	m * a;
+
+	std::vector<float> vf = createMesh1D(11);
+	for (int i = 0; i < vf.size(); i++) {
+		std::cout << vf[i] << "  " << std::endl;
+	}
+	std::vector<unsigned short> vi = createLineIndices(11);
+	for (int i = 0; i < vi.size(); i++) {
+		std::cout << vi[i] << "  " << std::endl;
+	}
 
 	App app(argc, argv);
 		

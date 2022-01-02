@@ -3,6 +3,7 @@
 #include "Shader.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
+#include "GeometryData.hpp"
 
 extern PFN_vkCreatePipelineLayout vkCreatePipelineLayout;
 extern PFN_vkDestroyPipelineLayout vkDestroyPipelineLayout;
@@ -17,10 +18,13 @@ extern PFN_vkCmdBindVertexBuffers vkCmdBindVertexBuffers;
 extern PFN_vkCmdBindPipeline vkCmdBindPipeline;
 extern PFN_vkCmdBindDescriptorSets vkCmdBindDescriptorSets;
 extern PFN_vkCmdDrawIndexed vkCmdDrawIndexed;
+extern PFN_vkCmdPushConstants vkCmdPushConstants;
 
-RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPool, json& gobj, Matrix& mView) : mView(mView) {
+RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPool, json& gobj, Matrix* mView) : mView(mView) {
 	vkSetup = _vkSetup;
+	swapChainExtent = vkSetup->getSwapChainExtent();
 	descriptorPool = _descriptorPool;
+	name = gobj["name"].get<std::string>();
 	vertexShader = new Shader(vkSetup, gobj["shader"]["vertexShaderFileName"].get<std::string>().c_str());
 	fragmentShader = new Shader(vkSetup, gobj["shader"]["fragmentShaderFileName"].get<std::string>().c_str());
 	vertexShader->load();
@@ -29,20 +33,84 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 	fragmentShader->createShaderModule();
 	vertexShader->createShaderStageInfo(VK_SHADER_STAGE_VERTEX_BIT);
 	fragmentShader->createShaderStageInfo(VK_SHADER_STAGE_FRAGMENT_BIT);
-	shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
-	formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
-	offsets = { offsetof(Vertex, pos), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
-	topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	pTessellationStateCreateInfo = nullptr;
+	if (gobj["GeometryForm"] == GEO_MESH_1D) {
+		stride = sizeof(float);
+		formats = { VK_FORMAT_R32_SFLOAT };
+		offsets = { 0 };
+		topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		pTessellationStateCreateInfo = nullptr;
+	}
+	else if (gobj["GeometryForm"] == GEO_MESH_2D) {
+		stride = 2 * sizeof(float);
+		formats = { VK_FORMAT_R32G32_SFLOAT };
+		offsets = { 0 };
+		topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		pTessellationStateCreateInfo = nullptr;
+	}
+	else if (gobj["GeometryForm"] == GEO_CURVE_PATCHES || gobj["GeometryForm"] == GEO_PATCH_1D) {
+		stride = sizeof(float);
+		formats = { VK_FORMAT_R32_SFLOAT };
+		offsets = { 0 };
+		topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+		tessellationControlShader = new Shader(vkSetup, gobj["shader"]["tessellationControlShaderFileName"].get<std::string>().c_str());
+		tessellationEvaluationShader = new Shader(vkSetup, gobj["shader"]["tessellationEvaluationShader"].get<std::string>().c_str());
+		tessellationControlShader->load();
+		tessellationEvaluationShader->load();
+		tessellationControlShader->createShaderModule();
+		tessellationEvaluationShader->createShaderModule();
+		tessellationControlShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+		tessellationEvaluationShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+		shaderStages = { vertexShader->getShaderStageInfo(), tessellationControlShader->getShaderStageInfo(), tessellationEvaluationShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		createTessellationStateCreateInfo(2);
+	}
+	else if (gobj["GeometryForm"] == GEO_CUBE) {
+		stride = sizeof(Vertex);
+		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
+		offsets = { offsetof(Vertex, pos), offsetof(Vertex, normal), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
+		topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		pTessellationStateCreateInfo = nullptr;
+	}
+	else if (gobj["GeometryForm"] == GEO_CUBE_SPHERE) {
+		stride = sizeof(Vertex);
+		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
+		offsets = { offsetof(Vertex, pos), offsetof(Vertex, normal), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
+		topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+		tessellationControlShader = new Shader(vkSetup, gobj["shader"]["tessellationControlShaderFileName"].get<std::string>().c_str());
+		tessellationEvaluationShader = new Shader(vkSetup, gobj["shader"]["tessellationEvaluationShader"].get<std::string>().c_str());
+		tessellationControlShader->load();
+		tessellationEvaluationShader->load();
+		tessellationControlShader->createShaderModule();
+		tessellationEvaluationShader->createShaderModule();
+		tessellationControlShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+		tessellationEvaluationShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+		shaderStages = { vertexShader->getShaderStageInfo(), tessellationControlShader->getShaderStageInfo(), tessellationEvaluationShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		createTessellationStateCreateInfo(4);
+	}
+	else {
+		stride = sizeof(Vertex);
+		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
+		offsets = { offsetof(Vertex, pos), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
+		topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		pTessellationStateCreateInfo = nullptr;
+	}
 	vertexOffset = 0;
 	firstIndex = 0;
 	uboBufferSize = 0x200;
-	mProj[0][0] = (float)vkSetup->getSwapChainExtent().height / (float)vkSetup->getSwapChainExtent().width * 0.5f;
+	mProj[0][0] = (float)swapChainExtent.height / (float)swapChainExtent.width * 0.5f;
 	mProj[1][1] = 0.5f;
-	color[0] = 0.0f; color[1] = 1.0f; color[2] = 0.0f; color[3] = 1.0f;
+	myValue = Vector(0.0f, 1.0f, 0.0f, 1.0f); //in diesem Fall eine Farbe
 	texture = new Texture(vkSetup, gobj["texture"]["fileName"].get<std::string>().c_str());
+	json item = gobj["PushConstants"];
+	if (!item.is_null()) {
+		bool hasPushConstants = item.get<bool>();
+		if (hasPushConstants) createPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(PushConstants));
+	}
 	getAttributeDescriptions();
-	getBindingDescription(sizeof(Vertex));
+	getBindingDescription();
 	createUniformBuffer();
 	createPipelineLayout();
 	createGraphicsPipeline();
@@ -50,6 +118,7 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 }
 
 RenderObject::~RenderObject() {
+	delete pTessellationStateCreateInfo;
 	delete texture;
 	vkFreeDescriptorSets(vkSetup->getDevice(), descriptorPool, 1, &descriptorSet);
 	vkDestroyPipeline(vkSetup->getDevice(), graphicsPipeline, nullptr);
@@ -57,6 +126,8 @@ RenderObject::~RenderObject() {
 	delete uniformBuffer;
 	delete fragmentShader;
 	delete vertexShader;
+	delete tessellationControlShader;
+	delete tessellationEvaluationShader;
 }
 
 void RenderObject::getAttributeDescriptions() {
@@ -70,11 +141,26 @@ void RenderObject::getAttributeDescriptions() {
 	}
 }
 
-void RenderObject::getBindingDescription(uint32_t stride) {
+void RenderObject::getBindingDescription() {
 	bindingDescription = {};
 	bindingDescription.binding = 0;
 	bindingDescription.stride = stride;
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+}
+
+void RenderObject::createTessellationStateCreateInfo(uint32_t patchControlPoints) {
+	pTessellationStateCreateInfo = new VkPipelineTessellationStateCreateInfo();
+	*pTessellationStateCreateInfo = {};
+	pTessellationStateCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+	pTessellationStateCreateInfo->patchControlPoints = patchControlPoints;
+}
+
+void RenderObject::createPushConstantRange(VkShaderStageFlags shaderStageFlags, uint32_t size) {
+	VkPushConstantRange pushConstsRange;
+	pushConstsRange.stageFlags = shaderStageFlags;
+	pushConstsRange.offset = 0;
+	pushConstsRange.size = size;
+	pushConstantRange.push_back(pushConstsRange);
 }
 
 void RenderObject::createUniformBuffer() {
@@ -244,7 +330,7 @@ void RenderObject::createDescriptorSet() {
 	VkDescriptorBufferInfo materialBufferInfo = {};
 	materialBufferInfo.buffer = uniformBuffer->getBuffer();
 	materialBufferInfo.offset = 0x100;
-	materialBufferInfo.range = sizeof(color);
+	materialBufferInfo.range = sizeof(myValue);
 
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -291,6 +377,9 @@ void RenderObject::createDescriptorSet() {
 }
 
 void RenderObject::createCommands(VkCommandBuffer cmdBuffer, VkBuffer* vertexBuffer) {
+	if (pushConstantRange.size()) {
+		vkCmdPushConstants(cmdBuffer, pipelineLayout, pushConstantRange[0].stageFlags, pushConstantRange[0].offset, pushConstantRange[0].size, &pushConstants);
+	}
 	VkDeviceSize offsets[] = { vertexOffset };
 	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, vertexBuffer, offsets);
 	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
@@ -302,13 +391,21 @@ void RenderObject::updateUniformBuffer() {
 	void* data;
 	vkMapMemory(vkSetup->getDevice(), uniformBuffer->getBufferMemory(), 0, uboBufferSize, 0, &data);
 	memcpy((char*)data, &mModel, sizeof(Matrix));
-	memcpy((char*)data + sizeof(Matrix), &mView, sizeof(Matrix));
+	memcpy((char*)data + sizeof(Matrix), mView, sizeof(Matrix));
 	memcpy((char*)data + 2 * sizeof(Matrix), &mProj, sizeof(Matrix));
-	memcpy((char*)data + 0x100, &color, sizeof(color));
+	memcpy((char*)data + 0x100, &myValue, sizeof(myValue));
 	vkUnmapMemory(vkSetup->getDevice(), uniformBuffer->getBufferMemory());
 }
 
 /* Setter */
+std::string& RenderObject::getName() { return name; }
 void RenderObject::setVertexOffet(uint64_t _vertexOffset) { vertexOffset = _vertexOffset; }
 void RenderObject::setIndexCount(uint32_t _indexCount) { indexCount = _indexCount; }
 void RenderObject::setFirstIndex(uint32_t _firstIndex) { firstIndex = _firstIndex; }
+void RenderObject::setPushConstants(float seed_u, float seed_v) {
+	pushConstants.seed_u = seed_u;
+	pushConstants.seed_v = seed_v;
+}
+void RenderObject::setViewMatrix(Matrix* _mView) {
+	mView = _mView;
+}
