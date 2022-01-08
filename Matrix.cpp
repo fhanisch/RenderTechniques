@@ -4,8 +4,137 @@
 #include <iostream>
 #include <iomanip>
 
+// Performance Optimierung für Matrizenmultiplikation:
+// - linken von 'math.obj' erforderlich
+// - Linkeroption '/LARGEADDRESSAWARE:NO' muss gesetzt werden
+extern "C" { void mul4x4(const Matrix* lhs, const Matrix* rhs, Matrix* retVal); } //für Assembler Funktion
+
+//-----------------------------------------------------------------
+/* Vector2 */
+//-----------------------------------------------------------------
+
+float& Vector2::operator[](int index) {
+	return ((float*)this)[index];
+}
+
+//-----------------------------------------------------------------
+/* Vector3 */
+//-----------------------------------------------------------------
+
+Vector3::Vector3() {
+	fill(0.0f);
+}
+
+Vector3::Vector3(float f) {
+	fill(f);
+}
+
+Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z) {
+
+}
+
+Vector3::Vector3(float v[3]) {
+	x = v[0];
+	y = v[1];
+	z = v[2];
+}
+
+Vector3::Vector3(const Vector3& v) {
+	x = v.x;
+	y = v.y;
+	z = v.z;
+}
+
+void Vector3::fill(float f) {
+	x = f;
+	y = f;
+	z = f;
+}
+
+float Vector3::length() {
+	return sqrt(x * x + y * y + z * z);
+}
+
+void Vector3::print() {
+	for (int i = 0; i < 3; i++) {
+		std::cout << ((float*)this)[i] << std::endl;
+	}
+}
+
+Vector3& Vector3::operator=(const Vector3& rhs) {
+	x = rhs.x;
+	y = rhs.y;
+	z = rhs.z;
+	return *this;
+}
+
+float& Vector3::operator[](int index) {
+	return ((float*)this)[index];
+}
+
+const float& Vector3::operator[](int index) const {
+	return ((float*)this)[index];
+}
+
+Vector3 normalize(Vector3 in) {
+	Vector3 retVal;
+	float l = in.length();
+	retVal.x = in.x / l;
+	retVal.y = in.y / l;
+	retVal.z = in.z / l;
+	return retVal;
+}
+
+Vector3 operator+(const Vector3& lhs, const float rhs) {
+	Vector3 retVal;
+	retVal.x = lhs.x + rhs;
+	retVal.y = lhs.y + rhs;
+	retVal.z = lhs.z + rhs;
+	return retVal;
+}
+
+Vector3 operator+(const float lhs, const Vector3& rhs) {
+	Vector3 retVal;
+	retVal.x = lhs + rhs.x;
+	retVal.y = lhs + rhs.y;
+	retVal.z = lhs + rhs.z;
+	return retVal;
+}
+
+Vector3 operator+(const Vector3& lhs, const Vector3& rhs) {
+	Vector3 retVal;
+	retVal.x = lhs.x + rhs.x;
+	retVal.y = lhs.y + rhs.y;
+	retVal.z = lhs.z + rhs.z;
+	return retVal;
+}
+
+Vector3 operator*(const Vector3& lhs, const float rhs) {
+	Vector3 retVal;
+	retVal.x = lhs.x * rhs;
+	retVal.y = lhs.y * rhs;
+	retVal.z = lhs.z * rhs;
+	return retVal;
+}
+
+Vector3 operator*(const float lhs, const Vector3& rhs) {
+	Vector3 retVal;
+	retVal.x = lhs * rhs.x;
+	retVal.y = lhs * rhs.y;
+	retVal.z = lhs * rhs.z;
+	return retVal;
+}
+
+Vector3 cross(const Vector3& lhs, const Vector3& rhs) {
+	return Vector3(lhs[1] * rhs[2] - lhs[2] * rhs[1], lhs[2] * rhs[0] - lhs[0] * rhs[2], lhs[0] * rhs[1] - lhs[1] * rhs[0]);
+}
+
+//-----------------------------------------------------------------
+/* Vector4 */
+//-----------------------------------------------------------------
+
 Vector::Vector() {
-	fill(0);
+	fill(0.0f);
 }
 
 Vector::Vector(float value) {
@@ -38,6 +167,30 @@ float& Vector::operator[](int index) {
 	return ((float*)this)[index];
 }
 
+const float& Vector::operator[](int index) const {
+	//return v[index];
+	return ((float*)this)[index];
+}
+
+Vector normalize(Vector in) {
+	Vector retVal;
+	//TODO: implementieren
+	return retVal;
+}
+
+Vector operator+(const Vector& lhs, const float rhs) {
+	Vector retVal;
+	retVal.x = lhs.x + rhs;
+	retVal.y = lhs.y + rhs;
+	retVal.z = lhs.z + rhs;
+	retVal.w = lhs.w + rhs;
+	return retVal;
+}
+
+//-----------------------------------------------------------------
+/* Matrix4 */
+//-----------------------------------------------------------------
+
 Matrix::Matrix() {
 	identity();
 }
@@ -53,6 +206,10 @@ void Matrix::identity() {
 }
 
 Vector& Matrix::operator[](int index) {
+	return m[index];
+}
+
+const Vector& Matrix::operator[](int index) const {
 	return m[index];
 }
 
@@ -110,17 +267,6 @@ Matrix& Matrix::rotZ(float phi) {
 Matrix& Matrix::operator=(const Matrix& rhs) {
 	memcpy(this, &rhs, sizeof(Matrix));
 	return *this;
-}
-
-Matrix Matrix::operator*(Matrix& rhs) {
-	Matrix retVal;
-	int i, r, c;
-	for (c = 0; c < 4; c++)
-		for (r = 0; r < 4; r++) {
-			retVal[c][r] = 0.0f;
-			for (i = 0; i < 4; i++) retVal[c][r] += m[i][r] * rhs[c][i];
-		}
-	return retVal;
 }
 
 void Matrix::frustum(float r, float t, float n, float f) {
@@ -202,29 +348,47 @@ Matrix Matrix::invert() {
 	return t;
 }
 
+Vector3 Matrix::getTranslationVector() {
+	return Vector3(m[3][0], m[3][1], m[3][2]);
+}
+
+Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+	Matrix retVal;
+	
+	int i, r, c;
+	for (c = 0; c < 4; c++) {
+		for (r = 0; r < 4; r++) {
+			retVal[c][r] = 0.0f;
+			for (i = 0; i < 4; i++) retVal[c][r] += lhs[i][r] * rhs[c][i];
+		}
+	}
+	
+	//mul4x4(&lhs, &rhs, &retVal);
+	return retVal;
+}
+
 std::vector<float> createMesh1D(int resolution) {
-	std::vector<float> v;
-	float f;
+	int len = resolution;
+	std::vector<float> v(len);
 
 	for (int i = 0; i < resolution; i++) {
-		f = (float)i / (float)(resolution - 1);
-		v.push_back(f);
+		v[i] = (float)i / (float)(resolution - 1);
 	}
 
 	return v;
 }
 
 std::vector<float> createMesh2D(int resolution) {
-	std::vector<float> v;
-	float f;
-
+	int len = 2 * resolution * resolution;
+	std::vector<float> v(len);
+	
+	int k = 0;
 	for (int i = 0; i < resolution; i++)
-		for (int j = 0; j < resolution; j++)
-		{
-			f = (float)j / ((float)resolution - 1);
-			v.push_back(f);
-			f = (float)i / ((float)resolution - 1);
-			v.push_back(f);
+		for (int j = 0; j < resolution; j++) {
+			v[k] = (float)j / ((float)resolution - 1);
+			k++;
+			v[k] = (float)i / ((float)resolution - 1);
+			k++;
 		}
 
 	return v;
@@ -242,15 +406,18 @@ std::vector<unsigned short> createMeshIndices(int resolution) {
 	int len = 3 * 2 * (resolution - 1) * (resolution - 1);
 	std::vector<unsigned short> v(len);
 
+	int triangleIndex = 0;
 	for (int i = 0; i < (resolution - 1); i++)
 		for (int j = 0; j < (resolution - 1); j++) {
-			v[6 * (i * (resolution - 1) + j) + 0] = i * resolution + j;
-			v[6 * (i * (resolution - 1) + j) + 1] = i * resolution + j + 1;
-			v[6 * (i * (resolution - 1) + j) + 2] = (i + 1) * resolution + j;
+			v[triangleIndex] = i * resolution + j;
+			v[triangleIndex + 1] = i * resolution + j + 1;
+			v[triangleIndex + 2] = (i + 1) * resolution + j;
 
-			v[6 * (i * (resolution - 1) + j) + 3] = i * resolution + j + 1;
-			v[6 * (i * (resolution - 1) + j) + 4] = (i + 1) * resolution + j;
-			v[6 * (i * (resolution - 1) + j) + 5] = (i + 1) * resolution + j + 1;
+			v[triangleIndex + 3] = i * resolution + j + 1;
+			v[triangleIndex + 4] = (i + 1) * resolution + j;
+			v[triangleIndex + 5] = (i + 1) * resolution + j + 1;
+
+			triangleIndex += 6;
 		}
 
 	return v;

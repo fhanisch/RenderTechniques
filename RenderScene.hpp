@@ -5,15 +5,16 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "RenderObject.hpp"
 #include "Matrix.hpp"
 #include "json.hpp"
 #include "Models.hpp"
 #include "GeometryData.hpp"
+#include "Camera.hpp"
 
 using json = nlohmann::json;
 using namespace Models;
 
-struct Vertex;
 class VulkanSetup;
 class RenderObject;
 class Buffer;
@@ -27,7 +28,8 @@ class RenderScene {
 	std::vector<VkCommandBuffer> commandBuffers;
 	GeometryData geoData;
 	json graphicObjects;
-	Matrix cam1;
+	int camIndex;
+	Camera cam[2];
 	Matrix mView;
 	Matrix mView3D;
 	Star* star;
@@ -46,6 +48,8 @@ class RenderScene {
 	Cube* cube;
 	CubeSphere* cubeSphere;
 	Planet* planet;
+	Planet2* planet2;
+	Perlin1DVertices* perlin1DVertices;
 	bool updateAll = true;
 	void createDescriptorPool();
 	void createGeometryData();

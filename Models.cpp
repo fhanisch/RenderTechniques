@@ -119,18 +119,19 @@ void Welle::motion() {
 
 Plane::Plane(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
-	obj->mModel = Matrix().translate(Vector(0.0f, -0.5f, -1.0f, 1.0f)) * Matrix().rotX(PI / 2.0f) * Matrix().scale(Vector(10.0f, 10.0f, 1.0f, 1.0f));
+	obj->mModel = Matrix().translate(Vector(0.0f, 105.5f, -1.0f, 1.0f)) * Matrix().rotX(PI / 2.0f) * Matrix().scale(Vector(10.0f, 10.0f, 1.0f, 1.0f));
 	obj->myValue = Vector(1.0);
 }
 
 Sphere::Sphere(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
-	obj->mModel = Matrix().translate(Vector(5.0f, 0.5f, -5.0f, 1.0f));
+	obj->mModel = Matrix().rotY(0.8f * PI / 2.0f) * Matrix().rotZ(PI / 2.0f) * Matrix().translate(Vector(0.0f, 101.0f, 0.0f, 1.0f));
 	obj->myValue = Vector(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
 TestObject::TestObject(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
+	obj->mModel = Matrix().translate(Vector(0.0f, 110.0f, 0.0f, 1.0f));
 	obj->myValue = Vector(1.0f, 1.0f, 0.0f, 1.0f);
 }
 
@@ -147,17 +148,26 @@ Perlin1dTessellator::Perlin1dTessellator(RenderObject* _graphicObj) : Model(_gra
 
 Cube::Cube(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
-	obj->mModel = Matrix().translate(Vector(-5.0f, 1.0f, -5.0f, 1.0f));
+	obj->mModel = Matrix().rotY(-PI / 4.0f) * Matrix().rotZ(-PI / 4.0f) * Matrix().translate(Vector(0.0f, 110.0f, 0.0f, 1.0f));
 	obj->myValue = Vector(1.0f, 1.0f, 0.0f, 1.0f);
 }
 
 CubeSphere::CubeSphere(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
-	obj->mModel = Matrix().translate(Vector(-5.0f, 1.0f, 5.0f, 1.0f));
+	obj->mModel = Matrix().rotY(PI / 2.0f) * Matrix().rotZ(PI) * Matrix().translate(Vector(0.0f, 102.0f, 0.0f, 1.0f));
 	obj->myValue = Vector(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
 Planet::Planet(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
-	obj->mModel = Matrix().translate(Vector(5.0f, 1.0f, 5.0f, 1.0f));
+	obj->mModel = Matrix().rotX(PI / 8.0f) * Matrix().translate(Vector(0.0f, 120.0f, 0.0f, 1.0f));
+}
+
+Planet2::Planet2(RenderObject* _graphicObj) : Model(_graphicObj) {
+	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
+	obj->myValue.x = 100.0f;
+}
+
+Perlin1DVertices::Perlin1DVertices(RenderObject* _graphicObj) : Model(_graphicObj) {
+	obj->mModel = Matrix().translate(Vector(0.0f, -5.0f, 0.0f, 1.0f)) * Matrix().scale(Vector(2.0f, 2.0f, 1.0f, 1.0f));
 }

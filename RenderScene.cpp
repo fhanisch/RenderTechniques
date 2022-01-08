@@ -1,5 +1,4 @@
 #include "RenderScene.hpp"
-#include "RenderObject.hpp"
 #include "VulkanSetup.hpp"
 #include "Buffer.hpp"
 #include <iostream>
@@ -45,6 +44,7 @@ extern bool key[256];
 RenderScene::RenderScene(VulkanSetup* _vkSetup, json& _graphicObjects) {
 	vkSetup = _vkSetup;
 	graphicObjects = _graphicObjects;
+	camIndex = 0;
 	createDescriptorPool();
 	createGeometryData();
 	createGraphicObjects();
@@ -93,6 +93,9 @@ void RenderScene::createGeometryData() {
 	geoData.createData("1D-Patches", GEO_PATCH_1D, 101);
 	geoData.createData("Cube", GEO_CUBE);
 	geoData.createData("CubeSphere", GEO_CUBE_SPHERE);
+	geoData.createData("CubeSpherePatches", GEO_CUBE_SPHERE_PATCHES, 21);
+	geoData.createData("CubeSphereTerrain", GEO_CUBE_SPHERE_TERRAIN, 3);
+	geoData.createData("Perlin1DVertices", GEO_PERLIN_1D, 1001);
 }
 
 void RenderScene::createGraphicObjects() {
@@ -199,6 +202,7 @@ void RenderScene::assembleScene() {
 		else if (obj[i]->getName() == "Welle") welle = new Welle(obj[i]);
 		else if (obj[i]->getName() == "CurveTessellator") curveTessellator = new CurveTessellator(obj[i]);
 		else if (obj[i]->getName() == "Perlin1dTessellator") perlin1dTessellator = new Perlin1dTessellator(obj[i]);
+		else if (obj[i]->getName() == "Perlin1DVertices") perlin1DVertices = new Perlin1DVertices(obj[i]);
 		else if (obj[i]->getName() == "Plane") {
 			plane = new Plane(obj[i]);
 			plane->obj->setViewMatrix(&mView3D);
@@ -223,7 +227,15 @@ void RenderScene::assembleScene() {
 			planet = new Planet(obj[i]);
 			planet->obj->setViewMatrix(&mView3D);
 		}
+		else if (obj[i]->getName() == "Planet2") {
+			planet2 = new Planet2(obj[i]);
+			planet2->obj->setViewMatrix(&mView3D);
+		}
 	}
+	cam[camIndex].OP.translate({ 0.0f, 106.5f, 0.0f, 1.0f });
+	cam[camIndex].elevation = 106.5f;
+	cam[camIndex].motionType = ROTATORY;
+	mView3D = cam[camIndex].OP.invert();
 }
 
 void RenderScene::updateUniformBuffers() {
@@ -243,8 +255,8 @@ void RenderScene::camMotion() {
 	float deltaR = 0.01f;
 	float dPhi = 0.0f;
 	float dTheta = 0.0f;
-	Matrix t, rx, ry, o;
-
+	float dPsi = 0.0f;
+	Matrix t, rx, ry, rz, rx2;
 
 	/* 2D Cam-Motion */
 	if (key[KEY_LEFT] && key[KEY_SHIFT]) {
@@ -266,50 +278,100 @@ void RenderScene::camMotion() {
 	if (updateAll) mView.translate(Vector(posX, posY, 0.0f, 1.0f));
 
 	/* 3D Cam-Motion */
-	if (key[KEY_A]) {
-		t[3][0] = -deltaT;
-		updateAll = true;
+	if (cam[camIndex].motionType == TRANSLATIONAL) {
+
+		if (key[KEY_A]) {
+			t[3][0] = -deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_D]) {
+			t[3][0] = deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_W]) {
+			t[3][2] = -deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_S]) {
+			t[3][2] = deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_X]) {
+			t[3][1] = -deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_Y]) {
+			t[3][1] = deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_LEFT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dPhi = deltaR;
+			updateAll = true;
+		}
+		if (key[KEY_RIGHT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dPhi = -deltaR;
+			updateAll = true;
+		}
+		if (key[KEY_UP] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dTheta = -deltaR;
+			updateAll = true;
+		}
+		if (key[KEY_DOWN] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dTheta = deltaR;
+			updateAll = true;
+		}
+		if (updateAll) {			
+			cam[camIndex].OP = cam[camIndex].OP.position() * ry.rotY(dPhi) * cam[camIndex].OP.orientation() * rx.rotX(dTheta) * t;
+			mView3D = cam[camIndex].OP.invert();
+		}
 	}
-	if (key[KEY_D]) {
-		t[3][0] = deltaT;
-		updateAll = true;
-	}
-	if(key[KEY_W]) {
-		t[3][2] = -deltaT;
-		updateAll = true;
-	}
-	if (key[KEY_S]) {
-		t[3][2] = deltaT;
-		updateAll = true;
-	}
-	if (key[KEY_X]) {
-		t[3][1] = -deltaT;
-		updateAll = true;
-	}
-	if (key[KEY_Y]) {
-		t[3][1] = deltaT;
-		updateAll = true;
-	}
-	if (key[KEY_LEFT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
-		dPhi = deltaR;
-		updateAll = true;
-	}
-	if (key[KEY_RIGHT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
-		dPhi = -deltaR;
-		updateAll = true;
-	}
-	if (key[KEY_UP] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
-		dTheta = -deltaR;
-		updateAll = true;
-	}
-	if (key[KEY_DOWN] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
-		dTheta = deltaR;
-		updateAll = true;
-	}
-	if (updateAll) {
-		o = cam1.orientation();
-		cam1 = cam1.position() * ry.rotY(dPhi) * o * rx.rotX(dTheta) * t;
-		mView3D = cam1.invert();
+	else {
+		static Matrix t2;
+		if (key[KEY_A]) {
+			dPsi = 0.001f;
+			updateAll = true;
+		}
+		if (key[KEY_D]) {
+			dPsi = -0.001f;
+			updateAll = true;
+		}
+		if (key[KEY_W]) {
+			dTheta = -0.001f;
+			updateAll = true;
+		}
+		if (key[KEY_S]) {
+			dTheta = 0.001f;
+			updateAll = true;
+		}
+		if (key[KEY_X]) {
+			cam[0].elevation -= deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_Y]) {
+			cam[0].elevation += deltaT;
+			updateAll = true;
+		}
+		if (key[KEY_LEFT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dPhi = 0.01f;
+			updateAll = true;
+		}
+		if (key[KEY_RIGHT] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			dPhi = -0.01f;
+			updateAll = true;
+		}
+		if (key[KEY_UP] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			cam[0].Xi -= 0.01f;
+			updateAll = true;
+		}
+		if (key[KEY_DOWN] && !key[KEY_SHIFT] && !key[KEY_CONTROL]) {
+			cam[0].Xi += 0.01f;
+			updateAll = true;
+		}
+		if (updateAll) {
+			t[3][1] = cam[0].elevation;
+			cam[camIndex].OP = cam[camIndex].OP.orientation() * rz.rotZ(dPsi) * ry.rotY(dPhi) * rx.rotX(dTheta) * t;
+			mView3D = (cam[camIndex].OP * rx2.rotX(cam[0].Xi)).invert();
+		}
 	}
 
 	square->motion();

@@ -4,6 +4,8 @@
 #include "MyFile.hpp"
 #include "RenderScene.hpp"
 #include "Matrix.hpp"
+#include "Test.hpp"
+#include "Noise.hpp"
 
 App::App(int argc, char** argv) {
 	int width, height;
@@ -126,6 +128,55 @@ void checkArguments(int argc, char** argv) {
 int main(int argc, char** argv) {
 
 	checkArguments(argc, argv);
+
+	Noise noise(66);
+	float X;
+	float noiseValue[21];
+
+	for (int i = 0; i < 21; i++) {
+		X = 2.0f * (float)i / 20.0f - 1.0f;
+		std::cout << X << "   ";
+	}
+	std::cout << '\n';
+	for (int i = 0; i < 21; i++) {
+		X = 2.0f * (float)i / 20.0f - 1.0f;
+		std::cout << floor(X) << "   ";
+	}
+	std::cout << '\n';
+	for (int i = 0; i < 21; i++) {
+		X = 2.0f * (float)i / 20.0f - 1.0f;
+		std::cout << X - floor(X) << "   ";
+	}
+	std::cout << '\n';
+	for (int i = 0; i < 21; i++) {
+		X = 2.0f * (float)i / 20.0f - 1.0f;
+		X = abs(X);
+		std::cout << X - floor(X) << "   ";
+	}
+	std::cout << '\n';
+	for (int i = 0; i < 21; i++) {
+		X = 2.0f * (float)i / 20.0f - 1.0f;
+		noiseValue[i] = noise.perlinNoise1D(X);
+	}
+	std::cout << '\n';
+	for (int i = 0; i < 21; i++) {
+		std::cout << noiseValue[i] << "   ";
+	}
+	std::cout << '\n';
+
+	Vector3 v = { 1.0f, 2.0f, 3.0f };	
+	v.print();
+	std::cout << v.length() << std::endl;
+	Vector3 u = normalize(v);
+	u.print();
+	std::cout << u.length() << std::endl;
+	Vector3 s = 10.0f + v + 1.0f + u;
+	Vector r = Vector(1.0f) + 10.0f;
+	s.print();
+
+	Test test;
+	float x = 0.0f;
+	test.cd(10, 10.0, x);
 
 	Matrix m, a;
 	m[3][3] = 0.12345f;

@@ -1,4 +1,5 @@
 #include "GeometryData.hpp"
+#include "Noise.hpp"
 
 GeometryData::GeometryData() {
 	vertices = nullptr;
@@ -62,6 +63,24 @@ void GeometryData::createData(std::string _name, GeometryForm _geoForm, int reso
 		pushBackVertices((float*)verticesCube.data(), (uint32_t)verticesCube.size() * (sizeof(Vertex) / sizeof(float)), descr);
 		pushBackIndices(indicesCubeSpherePatches.data(), (uint32_t)indicesCubeSpherePatches.size(), descr);
 		break;
+	case GEO_CUBE_SPHERE_PATCHES:
+		descr.resolution = resolution;
+		createCubeSpherePatches((std::vector<Mesh>*)&verts, &inds, resolution);
+		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
+		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
+		break;
+	case GEO_CUBE_SPHERE_TERRAIN:
+		descr.resolution = resolution;
+		createCubeSphere((std::vector<Vertex>*)& verts, &inds, resolution);
+		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
+		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
+		break;
+	case GEO_PERLIN_1D:
+		descr.resolution = resolution;
+		createPerlin1D((std::vector<Vector2>*)& verts, &inds, resolution);
+		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
+		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
+		break;
 	default:
 		std::cout << "Unknown Geometry form!\n";
 		exit(1);
@@ -88,6 +107,100 @@ void GeometryData::pushBackIndices(const uint16_t* s, uint32_t size, Descriptor&
 	descr.firstIndex = indicesSize;
 	descr.indexCount = size;
 	indicesSize += size;
+}
+
+void GeometryData::createCubeSpherePatches(std::vector<Mesh>* verts, std::vector<uint16_t>* inds, int resolution) {
+	int vertSizeFace = resolution * resolution;
+	int indSizeFace = 4 * (resolution - 1) * (resolution - 1);
+	*verts = std::vector<Mesh>(6 * vertSizeFace);
+	*inds = std::vector<uint16_t>(6 * indSizeFace);
+	Vector3 n[] = { { 0.0f,  1.0f,  0.0f }, { 0.0f, -1.0f, 0.0f }, { 1.0f,  0.0f,  0.0f }, { -1.0f, 0.0f, 0.0f }, { 0.0f,  0.0f,  1.0f }, { 0.0f, 0.0f, -1.0f } };
+
+	for (int i = 0; i < 6; i++) {
+		createTerrainFace(verts, inds, n[i], resolution, i*vertSizeFace, i*indSizeFace);
+	}
+}
+
+void GeometryData::createCubeSphere(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, int resolution) {
+	int vertSizeFace = resolution * resolution;
+	int indSizeFace = 3 * 2 * (resolution - 1) * (resolution - 1);
+	*verts = std::vector<Vertex>(6 * vertSizeFace);
+	*inds = std::vector<uint16_t>(6 * indSizeFace);
+	Vector3 n[] = { { 0.0f,  1.0f,  0.0f }, { 0.0f, -1.0f, 0.0f }, { 1.0f,  0.0f,  0.0f }, { -1.0f, 0.0f, 0.0f }, { 0.0f,  0.0f,  1.0f }, { 0.0f, 0.0f, -1.0f } };
+
+	for (int i = 0; i < 6; i++) {
+		createCubeSphereFace(verts, inds, n[i], resolution, i * vertSizeFace, i * indSizeFace);
+	}
+}
+
+void GeometryData::createTerrainFace(std::vector<Mesh>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset) {
+	int k = vertOffset;
+	int patchIndex = indOffset;
+	for (int i = 0; i < resolution; i++) {
+		for (int j = 0; j < resolution; j++) {
+			(*verts)[k].uv.x = (float)j / ((float)resolution - 1);
+			(*verts)[k].uv.y = (float)i / ((float)resolution - 1);
+			(*verts)[k].normal = normal;
+			k++;
+
+			if (i < (resolution - 1) && j < (resolution - 1)) {
+				(*inds)[patchIndex] = i * resolution + j + vertOffset;
+				(*inds)[patchIndex + 1] = i * resolution + j + 1 + vertOffset;
+				(*inds)[patchIndex + 2] = (i + 1) * resolution + j + vertOffset;
+				(*inds)[patchIndex + 3] = (i + 1) * resolution + j + 1 + vertOffset;
+				patchIndex += 4;
+			}
+		}
+	}
+}
+
+void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset) {
+	int vertexIndex = vertOffset;
+	int triangleIndex = indOffset;
+	float u;
+	float v;
+	Vector3 axisA = Vector3(normal.y, normal.z, normal.x);
+	Vector3 axisB = cross(normal, axisA);
+	Vector3 r;
+	for (int i = 0; i < resolution; i++) {
+		for (int j = 0; j < resolution; j++) {
+			u = 2.0f * ((float)j / ((float)resolution - 1)) - 1.0f;
+			v = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
+			r = normal + u * axisA + v * axisB;
+			r = normalize(r);
+			(*verts)[vertexIndex].pos = r;
+			(*verts)[vertexIndex].normal = normal;
+			(*verts)[vertexIndex].texCoords.x = (float)j / ((float)resolution - 1);
+			(*verts)[vertexIndex].texCoords.y = (float)i / ((float)resolution - 1);
+			(*verts)[vertexIndex].color = Vector3(1.0f);
+			vertexIndex++;
+
+			if (i < (resolution - 1) && j < (resolution - 1)) {
+				(*inds)[triangleIndex] = i * resolution + j + vertOffset;
+				(*inds)[triangleIndex + 1] = i * resolution + j + 1 + vertOffset;
+				(*inds)[triangleIndex + 2] = (i + 1) * resolution + j + vertOffset;
+
+				(*inds)[triangleIndex + 3] = i * resolution + j + 1 + vertOffset;
+				(*inds)[triangleIndex + 4] = (i + 1) * resolution + j + vertOffset;
+				(*inds)[triangleIndex + 5] = (i + 1) * resolution + j + 1 + vertOffset;
+
+				triangleIndex += 6;
+			}
+		}
+	}
+}
+
+void GeometryData::createPerlin1D(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution) {
+	Noise noise(66);
+	*verts = std::vector<Vector2>(resolution);
+	*inds = std::vector<uint16_t>(resolution);
+	float x;
+	for (int i = 0; i < resolution; i++) {
+		x = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
+		(*verts)[i].x = x;
+		(*verts)[i].y = noise.perlinNoise1D(x);
+		(*inds)[i] = i;
+	}
 }
 
 float* GeometryData::getVertices() {

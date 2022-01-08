@@ -14,7 +14,10 @@ enum GeometryForm {
 	GEO_MESH_2D = 7,
 	GEO_CURVE_PATCHES = 8,
 	GEO_PATCH_1D = 9,
-	GEO_CUBE_SPHERE = 10
+	GEO_CUBE_SPHERE = 10,
+	GEO_CUBE_SPHERE_PATCHES = 11,
+	GEO_CUBE_SPHERE_TERRAIN = 12,
+	GEO_PERLIN_1D = 13
 };
 
 struct Descriptor {
@@ -35,6 +38,11 @@ private:
 	std::vector<Descriptor> descriptors;
 	void pushBackVertices(const float* f, uint32_t size, Descriptor& descr);
 	void pushBackIndices(const uint16_t* s, uint32_t size, Descriptor& descr);
+	void createCubeSpherePatches(std::vector<Mesh>* verts, std::vector<uint16_t>* inds, int resolution);
+	void createCubeSphere(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, int resolution);
+	void createTerrainFace(std::vector<Mesh>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset);	
+	void createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset);
+	void createPerlin1D(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution);
 public:
 	GeometryData();
 	~GeometryData();

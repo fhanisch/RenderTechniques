@@ -10,15 +10,16 @@
 
 using json = nlohmann::json;
 
-typedef float vec2[2];
-typedef float vec3[3];
-typedef float vec4[4];
-
 struct Vertex {
-	vec3 pos;
-	vec3 normal;
-	vec3 color;
-	vec2 texCoords;
+	Vector3 pos;
+	Vector3 normal;
+	Vector3 color;
+	Vector2 texCoords;
+};
+
+struct Mesh {
+	Vector2 uv;
+	Vector3 normal;
 };
 
 class VulkanSetup;

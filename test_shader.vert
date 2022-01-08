@@ -7,30 +7,24 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 mProj;
 } ubo;
 
-layout(location = 0) in vec2 mesh;
-
-layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec2 texCoords;
-layout(location = 2) out vec3 vertexPosition;
-layout(location = 3) out vec3 normalPosition;
-
-out gl_PerVertex
-{
+out gl_PerVertex {
 	vec4 gl_Position;
 };
 
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec3 inColor;
+layout (location = 3) in vec2 inTexCoords;
+
+layout(location = 0) out vec3 outFragColor;
+layout(location = 1) out vec2 outTexCoords;
+layout(location = 2) out vec3 vertexPosition;
+layout(location = 3) out vec3 normalPosition;
+
 void main() {
-	vec3 r;	
-	float u = 2.0*mesh.x - 1.0;
-	float v = 2.0*mesh.y - 1.0;
-
-	r.x = u;
-	r.y = 1.0;
-	r.z = v;
-
-	fragColor = vec3(0.0, 0.0, 1.0);
-	texCoords = vec2(2.0*mesh.x, 2.0*mesh.y);
-	vertexPosition = vec3(ubo.mView * ubo.mModel * vec4(normalize(r), 1.0));
-	normalPosition = vec3(transpose(inverse(ubo.mView * ubo.mModel)) * vec4(normalize(r), 1.0));
+	outFragColor = inColor;
+	outTexCoords = inTexCoords;
+	vertexPosition = vec3(ubo.mView * ubo.mModel * vec4(inPosition, 1.0));
+	normalPosition = vec3(transpose(inverse(ubo.mView * ubo.mModel)) * vec4(inNormal, 1.0));
 	gl_Position = ubo.mProj * vec4(vertexPosition, 1.0);
 }

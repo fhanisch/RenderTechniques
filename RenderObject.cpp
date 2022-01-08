@@ -41,8 +41,16 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
 		pTessellationStateCreateInfo = nullptr;
 	}
+	else if (gobj["GeometryForm"] == GEO_PERLIN_1D) {
+		stride = sizeof(Vector2);
+		formats = { VK_FORMAT_R32G32_SFLOAT };
+		offsets = { 0 };
+		topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		pTessellationStateCreateInfo = nullptr;
+	}
 	else if (gobj["GeometryForm"] == GEO_MESH_2D) {
-		stride = 2 * sizeof(float);
+		stride = sizeof(Vector2);
 		formats = { VK_FORMAT_R32G32_SFLOAT };
 		offsets = { 0 };
 		topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -65,7 +73,7 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 		shaderStages = { vertexShader->getShaderStageInfo(), tessellationControlShader->getShaderStageInfo(), tessellationEvaluationShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
 		createTessellationStateCreateInfo(2);
 	}
-	else if (gobj["GeometryForm"] == GEO_CUBE) {
+	else if (gobj["GeometryForm"] == GEO_CUBE || gobj["GeometryForm"] == GEO_CUBE_SPHERE_TERRAIN) {
 		stride = sizeof(Vertex);
 		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
 		offsets = { offsetof(Vertex, pos), offsetof(Vertex, normal), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
@@ -77,6 +85,22 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 		stride = sizeof(Vertex);
 		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
 		offsets = { offsetof(Vertex, pos), offsetof(Vertex, normal), offsetof(Vertex, color), offsetof(Vertex, texCoords) };
+		topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+		tessellationControlShader = new Shader(vkSetup, gobj["shader"]["tessellationControlShaderFileName"].get<std::string>().c_str());
+		tessellationEvaluationShader = new Shader(vkSetup, gobj["shader"]["tessellationEvaluationShader"].get<std::string>().c_str());
+		tessellationControlShader->load();
+		tessellationEvaluationShader->load();
+		tessellationControlShader->createShaderModule();
+		tessellationEvaluationShader->createShaderModule();
+		tessellationControlShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+		tessellationEvaluationShader->createShaderStageInfo(VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
+		shaderStages = { vertexShader->getShaderStageInfo(), tessellationControlShader->getShaderStageInfo(), tessellationEvaluationShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
+		createTessellationStateCreateInfo(4);
+	}
+	else if (gobj["GeometryForm"] == GEO_CUBE_SPHERE_PATCHES) {
+		stride = sizeof(Mesh);
+		formats = { VK_FORMAT_R32G32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT };
+		offsets = { offsetof(Mesh, uv), offsetof(Mesh, normal) };
 		topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
 		tessellationControlShader = new Shader(vkSetup, gobj["shader"]["tessellationControlShaderFileName"].get<std::string>().c_str());
 		tessellationEvaluationShader = new Shader(vkSetup, gobj["shader"]["tessellationEvaluationShader"].get<std::string>().c_str());

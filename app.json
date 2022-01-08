@@ -152,7 +152,7 @@
 		},
 		{
 			"name": "TestObject",
-			"GeometryForm": 7,
+			"GeometryForm": 12,
 			"shader": {
 				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/test_shader.vert.spv",
 				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
@@ -196,6 +196,30 @@
 			},
 			"texture": {
 				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/moon.png"
+			}
+		},
+		{
+			"name": "Planet2",
+			"GeometryForm": 11,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet2.vert.spv",
+				"tessellationControlShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet2.tesc.spv",
+				"tessellationEvaluationShader": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet2.tese.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/moon.png"
+			}
+		},
+		{
+			"name": "Perlin1DVertices",
+			"GeometryForm": 13,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/xy.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
 			}
 		}
 	]

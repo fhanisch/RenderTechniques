@@ -104,4 +104,14 @@ namespace Models {
 	public:
 		Planet(RenderObject* _graphicObj);
 	};
+
+	class Planet2 : public Model {
+	public:
+		Planet2(RenderObject* _graphicObj);
+	};
+
+	class Perlin1DVertices : public Model {
+	public:
+		Perlin1DVertices(RenderObject* _graphicObj);
+	};
 }
