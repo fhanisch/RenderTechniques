@@ -114,4 +114,14 @@ namespace Models {
 	public:
 		Perlin1DVertices(RenderObject* _graphicObj);
 	};
+
+	class PerlinCircleVertices : public Model {
+	public:
+		PerlinCircleVertices(RenderObject* _graphicObj);
+	};
+
+	class Terrain2D : public Model {
+	public:
+		Terrain2D(RenderObject* _graphicObj);
+	};
 }

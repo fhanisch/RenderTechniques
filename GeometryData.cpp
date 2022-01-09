@@ -72,12 +72,26 @@ void GeometryData::createData(std::string _name, GeometryForm _geoForm, int reso
 	case GEO_CUBE_SPHERE_TERRAIN:
 		descr.resolution = resolution;
 		createCubeSphere((std::vector<Vertex>*)& verts, &inds, resolution);
+		//recalculateNormals((std::vector<Vertex>*) & verts, &inds);
 		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
 		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
 		break;
 	case GEO_PERLIN_1D:
 		descr.resolution = resolution;
 		createPerlin1D((std::vector<Vector2>*)& verts, &inds, resolution);
+		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
+		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
+		break;
+	case GEO_PERLIN_CIRCLE:
+		descr.resolution = resolution;
+		createPerlinCircle((std::vector<Vector2>*) & verts, &inds, resolution);
+		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
+		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
+		break;
+	case GEO_TERRAIN_2D:
+		descr.resolution = resolution;
+		createTerrain2D((std::vector<Vertex>*)& verts, &inds, resolution);
+		recalculateNormals((std::vector<Vertex>*)& verts, &inds);
 		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
 		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
 		break;
@@ -181,8 +195,8 @@ void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<
 				(*inds)[triangleIndex + 2] = (i + 1) * resolution + j + vertOffset;
 
 				(*inds)[triangleIndex + 3] = i * resolution + j + 1 + vertOffset;
-				(*inds)[triangleIndex + 4] = (i + 1) * resolution + j + vertOffset;
-				(*inds)[triangleIndex + 5] = (i + 1) * resolution + j + 1 + vertOffset;
+				(*inds)[triangleIndex + 4] = (i + 1) * resolution + j + 1 + vertOffset;
+				(*inds)[triangleIndex + 5] = (i + 1) * resolution + j + vertOffset;
 
 				triangleIndex += 6;
 			}
@@ -191,15 +205,96 @@ void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<
 }
 
 void GeometryData::createPerlin1D(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution) {
-	Noise noise(66);
+	NoiseSettings settings;
+	settings.numLayers = 8;
+	settings.minValue = 0.85f;
+	NoiseFilter noiseFilter(66, settings);
 	*verts = std::vector<Vector2>(resolution);
 	*inds = std::vector<uint16_t>(resolution);
 	float x;
 	for (int i = 0; i < resolution; i++) {
 		x = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
 		(*verts)[i].x = x;
-		(*verts)[i].y = noise.perlinNoise1D(x);
+		(*verts)[i].y = -noiseFilter.evaluate(x);
 		(*inds)[i] = i;
+	}
+}
+
+void GeometryData::createPerlinCircle(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution) {
+	NoiseSettings settings;
+	settings.numLayers = 4;
+	settings.minValue = 0.9f;
+	settings.strength = 2.0f;
+	NoiseFilter noiseFilter(123, settings);
+	*verts = std::vector<Vector2>(resolution);
+	*inds = std::vector<uint16_t>(resolution);
+	float u;
+	float dr;
+	for (int i = 0; i < resolution; i++) {
+		u = (float)i / ((float)resolution - 1);
+		(*verts)[i].x = cos(u * 2.0f * PI);
+		(*verts)[i].y = -sin(u * 2.0f * PI);
+		(*inds)[i] = i;
+		dr = noiseFilter.evaluate((*verts)[i]);
+		(*verts)[i] = (1 + dr) * (*verts)[i];
+	}
+}
+
+void GeometryData::createTerrain2D(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, int resolution) {
+	int vertSize = resolution * resolution;
+	int indSize = 3 * 2 * (resolution - 1) * (resolution - 1);
+	*verts = std::vector<Vertex>(vertSize);
+	*inds = std::vector<uint16_t>(indSize);
+	NoiseSettings settings;
+	settings.numLayers = 4;
+	settings.minValue = 0.9f;
+	//settings.strength = 2.0f;
+	NoiseFilter noiseFilter(244, settings);
+	int vertexIndex = 0;
+	int triangleIndex = 0;
+	float u;
+	float v;
+	Vector3 r;
+	for (int i = 0; i < resolution; i++) {
+		for (int j = 0; j < resolution; j++) {
+			u = 2.0f * ((float)j / ((float)resolution - 1)) - 1.0f;
+			v = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
+			r.x = u;
+			r.y = noiseFilter.evaluate(Vector2(u, v));
+			r.z = v;
+			(*verts)[vertexIndex].pos = r;
+			(*verts)[vertexIndex].normal = Vector3(0.0f, 1.0f, 0.0f);
+			(*verts)[vertexIndex].texCoords.x = 2.0f * (float)j / ((float)resolution - 1);
+			(*verts)[vertexIndex].texCoords.y = 2.0f * (float)i / ((float)resolution - 1);
+			(*verts)[vertexIndex].color = Vector3(1.0f);
+			vertexIndex++;
+
+			if (i < (resolution - 1) && j < (resolution - 1)) {
+				(*inds)[triangleIndex] = i * resolution + j;
+				(*inds)[triangleIndex + 1] = i * resolution + j + 1;
+				(*inds)[triangleIndex + 2] = (i + 1) * resolution + j;
+
+				(*inds)[triangleIndex + 3] = i * resolution + j + 1;
+				(*inds)[triangleIndex + 4] = (i + 1) * resolution + j + 1;
+				(*inds)[triangleIndex + 5] = (i + 1) * resolution + j;
+
+				triangleIndex += 6;
+			}
+		}
+	}
+}
+
+void GeometryData::recalculateNormals(std::vector<Vertex>* verts, std::vector<uint16_t>* inds) {
+	Vector3 a;
+	Vector3 b;
+	Vector3 n;
+	for (int i = 0; i < (*inds).size(); i += 3) {
+		a = (*verts)[(*inds)[i + 1]].pos - (*verts)[(*inds)[i]].pos;
+		b = (*verts)[(*inds)[i + 2]].pos - (*verts)[(*inds)[i]].pos;
+		n = -normalize(cross(a, b));
+		(*verts)[(*inds)[i]].normal = n;
+		(*verts)[(*inds)[i + 1]].normal = n;
+		(*verts)[(*inds)[i + 2]].normal = n;
 	}
 }
 

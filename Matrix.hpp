@@ -6,8 +6,19 @@
 struct Vector2 {
 	float x;
 	float y;
+	Vector2();
+	Vector2(float f);
+	Vector2(float x, float y);
+	Vector2(float v[2]);
 	float& operator[](int index);
 };
+
+Vector2 floor(Vector2 r);
+float dot(const Vector2& lhs, const Vector2& rhs);
+Vector2 operator-(const Vector2& lhs, const Vector2& rhs);
+Vector2 operator+(const Vector2& lhs, const Vector2& rhs);
+Vector2 operator*(const Vector2& lhs, const float rhs);
+Vector2 operator*(const float lhs, const Vector2& rhs);
 
 struct Vector3 {
 	float x;
@@ -30,8 +41,10 @@ Vector3 normalize(Vector3 in);
 Vector3 operator+(const Vector3& lhs, const float rhs);
 Vector3 operator+(const float lhs, const Vector3& rhs);
 Vector3 operator+(const Vector3& lhs, const Vector3& rhs);
+Vector3 operator-(const Vector3& lhs, const Vector3& rhs);
 Vector3 operator*(const Vector3& lhs, const float rhs);
 Vector3 operator*(const float lhs, const Vector3& rhs);
+Vector3 operator-(const Vector3& rhs);
 Vector3 cross(const Vector3& lhs, const Vector3& rhs);
 
 class Vector {

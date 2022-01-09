@@ -171,3 +171,14 @@ Planet2::Planet2(RenderObject* _graphicObj) : Model(_graphicObj) {
 Perlin1DVertices::Perlin1DVertices(RenderObject* _graphicObj) : Model(_graphicObj) {
 	obj->mModel = Matrix().translate(Vector(0.0f, -5.0f, 0.0f, 1.0f)) * Matrix().scale(Vector(2.0f, 2.0f, 1.0f, 1.0f));
 }
+
+PerlinCircleVertices::PerlinCircleVertices(RenderObject* _graphicObj) : Model(_graphicObj) {
+	obj->mModel = Matrix().translate(Vector(0.0f, -10.0, 0.0f, 1.0f)) * Matrix().scale(Vector(1.5f, 1.5f, 1.0f, 1.0f));
+	obj->myValue = Vector(1.0f, 0.0f, 1.0f, 1.0f);
+}
+
+Terrain2D::Terrain2D(RenderObject* _graphicObj) : Model(_graphicObj) {
+	obj->mProj.frustum(0.25f * (float)obj->swapChainExtent.width / (float)obj->swapChainExtent.height, 0.25f, 0.5f, 1000.0f);
+	obj->mModel = Matrix().translate(Vector(0.0f, 106.0f, -40.0f, 1.0f)) * Matrix().scale(Vector(20.0f, 20.0f, 20.0f, 1.0f));
+	obj->myValue = Vector(1.0f, 1.0f, 0.0f, 1.0f);
+}

@@ -41,7 +41,7 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 		shaderStages = { vertexShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
 		pTessellationStateCreateInfo = nullptr;
 	}
-	else if (gobj["GeometryForm"] == GEO_PERLIN_1D) {
+	else if (gobj["GeometryForm"] == GEO_PERLIN_1D || gobj["GeometryForm"] == GEO_PERLIN_CIRCLE) {
 		stride = sizeof(Vector2);
 		formats = { VK_FORMAT_R32G32_SFLOAT };
 		offsets = { 0 };
@@ -73,7 +73,7 @@ RenderObject::RenderObject(VulkanSetup* _vkSetup, VkDescriptorPool _descriptorPo
 		shaderStages = { vertexShader->getShaderStageInfo(), tessellationControlShader->getShaderStageInfo(), tessellationEvaluationShader->getShaderStageInfo(), fragmentShader->getShaderStageInfo() };
 		createTessellationStateCreateInfo(2);
 	}
-	else if (gobj["GeometryForm"] == GEO_CUBE || gobj["GeometryForm"] == GEO_CUBE_SPHERE_TERRAIN) {
+	else if (gobj["GeometryForm"] == GEO_CUBE || gobj["GeometryForm"] == GEO_CUBE_SPHERE_TERRAIN || gobj["GeometryForm"] == GEO_TERRAIN_2D) {
 		stride = sizeof(Vertex);
 		formats = { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT };
 		offsets = { offsetof(Vertex, pos), offsetof(Vertex, normal), offsetof(Vertex, color), offsetof(Vertex, texCoords) };

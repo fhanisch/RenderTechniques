@@ -13,8 +13,63 @@ extern "C" { void mul4x4(const Matrix* lhs, const Matrix* rhs, Matrix* retVal); 
 /* Vector2 */
 //-----------------------------------------------------------------
 
+Vector2::Vector2() {
+	x = 0.0f;
+	y = 0.0f;
+}
+
+Vector2::Vector2(float f) {
+	x = f;
+	y = f;
+}
+
+Vector2::Vector2(float x, float y) : x(x), y(y) {
+
+}
+
+Vector2::Vector2(float v[2]) {
+	x = v[0];
+	y = v[1];
+}
+
 float& Vector2::operator[](int index) {
 	return ((float*)this)[index];
+}
+
+Vector2 floor(Vector2 r) {
+	return Vector2(floor(r.x), floor(r.y));
+}
+
+float dot(const Vector2& lhs, const Vector2& rhs) {
+	return lhs.x * rhs.x + lhs.y * rhs.y;
+}
+
+Vector2 operator-(const Vector2& lhs, const Vector2& rhs) {
+	Vector2 retVal;
+	retVal.x = lhs.x - rhs.x;
+	retVal.y = lhs.y - rhs.y;
+	return retVal;
+}
+
+Vector2 operator+(const Vector2& lhs, const Vector2& rhs) {
+	Vector2 retVal;
+	retVal.x = lhs.x + rhs.x;
+	retVal.y = lhs.y + rhs.y;
+	return retVal;
+}
+
+Vector2 operator*(const Vector2& lhs, const float rhs) {
+	Vector2 retVal;
+	retVal.x = lhs.x * rhs;
+	retVal.y = lhs.y * rhs;
+	return retVal;
+}
+
+Vector2 operator*(const float lhs, const Vector2& rhs) {
+	Vector2 retVal;
+	retVal.x = lhs * rhs.x;
+	retVal.y = lhs * rhs.y;
+	return retVal;
 }
 
 //-----------------------------------------------------------------
@@ -109,6 +164,14 @@ Vector3 operator+(const Vector3& lhs, const Vector3& rhs) {
 	return retVal;
 }
 
+Vector3 operator-(const Vector3& lhs, const Vector3& rhs) {
+	Vector3 retVal;
+	retVal.x = lhs.x - rhs.x;
+	retVal.y = lhs.y - rhs.y;
+	retVal.z = lhs.z - rhs.z;
+	return retVal;
+}
+
 Vector3 operator*(const Vector3& lhs, const float rhs) {
 	Vector3 retVal;
 	retVal.x = lhs.x * rhs;
@@ -123,6 +186,10 @@ Vector3 operator*(const float lhs, const Vector3& rhs) {
 	retVal.y = lhs * rhs.y;
 	retVal.z = lhs * rhs.z;
 	return retVal;
+}
+
+Vector3 operator-(const Vector3& rhs) {
+	return -1*rhs;
 }
 
 Vector3 cross(const Vector3& lhs, const Vector3& rhs) {
@@ -413,9 +480,9 @@ std::vector<unsigned short> createMeshIndices(int resolution) {
 			v[triangleIndex + 1] = i * resolution + j + 1;
 			v[triangleIndex + 2] = (i + 1) * resolution + j;
 
-			v[triangleIndex + 3] = i * resolution + j + 1;
-			v[triangleIndex + 4] = (i + 1) * resolution + j;
-			v[triangleIndex + 5] = (i + 1) * resolution + j + 1;
+			v[triangleIndex + 3] = i * resolution + j + 1;			
+			v[triangleIndex + 4] = (i + 1) * resolution + j + 1;
+			v[triangleIndex + 5] = (i + 1) * resolution + j;
 
 			triangleIndex += 6;
 		}

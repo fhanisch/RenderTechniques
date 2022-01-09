@@ -84,7 +84,7 @@
 			"GeometryForm": 6,
 			"PushConstants": true,
 			"shader": {
-				"vertexShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/perlinCircle.vert.spv",
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/perlinCircle.vert.spv",
 				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/default.frag.spv"
 			},
 			"texture": {
@@ -220,6 +220,28 @@
 			},
 			"texture": {
 				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "PerlinCircleVertices",
+			"GeometryForm": 14,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/xy.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/default.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+			}
+		},
+		{
+			"name": "Terrain2D",
+			"GeometryForm": 15,
+			"shader": {
+				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/test_shader.vert.spv",
+				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+			},
+			"texture": {
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/moon.png"
 			}
 		}
 	]

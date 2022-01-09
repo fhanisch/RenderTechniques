@@ -50,6 +50,8 @@ class RenderScene {
 	Planet* planet;
 	Planet2* planet2;
 	Perlin1DVertices* perlin1DVertices;
+	PerlinCircleVertices* perlinCircleVertices;
+	Terrain2D* terrain2D;
 	bool updateAll = true;
 	void createDescriptorPool();
 	void createGeometryData();

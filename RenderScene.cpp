@@ -96,6 +96,8 @@ void RenderScene::createGeometryData() {
 	geoData.createData("CubeSpherePatches", GEO_CUBE_SPHERE_PATCHES, 21);
 	geoData.createData("CubeSphereTerrain", GEO_CUBE_SPHERE_TERRAIN, 3);
 	geoData.createData("Perlin1DVertices", GEO_PERLIN_1D, 1001);
+	geoData.createData("PerlinCircleVertices", GEO_PERLIN_CIRCLE, 1001);
+	geoData.createData("Terrain2D", GEO_TERRAIN_2D, 101);
 }
 
 void RenderScene::createGraphicObjects() {
@@ -203,6 +205,7 @@ void RenderScene::assembleScene() {
 		else if (obj[i]->getName() == "CurveTessellator") curveTessellator = new CurveTessellator(obj[i]);
 		else if (obj[i]->getName() == "Perlin1dTessellator") perlin1dTessellator = new Perlin1dTessellator(obj[i]);
 		else if (obj[i]->getName() == "Perlin1DVertices") perlin1DVertices = new Perlin1DVertices(obj[i]);
+		else if (obj[i]->getName() == "PerlinCircleVertices") perlinCircleVertices = new PerlinCircleVertices(obj[i]);
 		else if (obj[i]->getName() == "Plane") {
 			plane = new Plane(obj[i]);
 			plane->obj->setViewMatrix(&mView3D);
@@ -231,10 +234,14 @@ void RenderScene::assembleScene() {
 			planet2 = new Planet2(obj[i]);
 			planet2->obj->setViewMatrix(&mView3D);
 		}
+		else if (obj[i]->getName() == "Terrain2D") {
+			terrain2D = new Terrain2D(obj[i]);
+			terrain2D->obj->setViewMatrix(&mView3D);
+		}
 	}
 	cam[camIndex].OP.translate({ 0.0f, 106.5f, 0.0f, 1.0f });
 	cam[camIndex].elevation = 106.5f;
-	cam[camIndex].motionType = ROTATORY;
+	cam[camIndex].motionType = ROTATORY; //TRANSLATIONAL;//ROTATORY;
 	mView3D = cam[camIndex].OP.invert();
 }
 

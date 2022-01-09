@@ -17,7 +17,9 @@ enum GeometryForm {
 	GEO_CUBE_SPHERE = 10,
 	GEO_CUBE_SPHERE_PATCHES = 11,
 	GEO_CUBE_SPHERE_TERRAIN = 12,
-	GEO_PERLIN_1D = 13
+	GEO_PERLIN_1D = 13,
+	GEO_PERLIN_CIRCLE = 14,
+	GEO_TERRAIN_2D = 15
 };
 
 struct Descriptor {
@@ -43,6 +45,9 @@ private:
 	void createTerrainFace(std::vector<Mesh>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset);	
 	void createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset);
 	void createPerlin1D(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution);
+	void createPerlinCircle(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution);
+	void createTerrain2D(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, int resolution);
+	void recalculateNormals(std::vector<Vertex>* verts, std::vector<uint16_t>* inds);
 public:
 	GeometryData();
 	~GeometryData();
