@@ -72,7 +72,7 @@ void GeometryData::createData(std::string _name, GeometryForm _geoForm, int reso
 	case GEO_CUBE_SPHERE_TERRAIN:
 		descr.resolution = resolution;
 		createCubeSphere((std::vector<Vertex>*)& verts, &inds, resolution);
-		//recalculateNormals((std::vector<Vertex>*) & verts, &inds);
+		recalculateNormals((std::vector<Vertex>*) & verts, &inds);
 		pushBackVertices(verts.data(), (uint32_t)verts.size(), descr);
 		pushBackIndices(inds.data(), (uint32_t)inds.size(), descr);
 		break;
@@ -169,19 +169,28 @@ void GeometryData::createTerrainFace(std::vector<Mesh>* verts, std::vector<uint1
 }
 
 void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset) {
+	NoiseSettings settings;
+	settings.numLayers = 4;
+	//settings.minValue = 0.9f;
+	settings.strength = 4.0f;
+	NoiseFilter noiseFilter(259, settings);
 	int vertexIndex = vertOffset;
 	int triangleIndex = indOffset;
 	float u;
 	float v;
 	Vector3 axisA = Vector3(normal.y, normal.z, normal.x);
-	Vector3 axisB = cross(normal, axisA);
+	Vector3 axisB = -cross(normal, axisA);
 	Vector3 r;
+	float dr;
+	float radius = 2.0f;
 	for (int i = 0; i < resolution; i++) {
 		for (int j = 0; j < resolution; j++) {
 			u = 2.0f * ((float)j / ((float)resolution - 1)) - 1.0f;
 			v = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
 			r = normal + u * axisA + v * axisB;
 			r = normalize(r);
+			dr = noiseFilter.evaluate(r);
+			r *= radius * (1.0f + dr);
 			(*verts)[vertexIndex].pos = r;
 			(*verts)[vertexIndex].normal = normal;
 			(*verts)[vertexIndex].texCoords.x = (float)j / ((float)resolution - 1);
@@ -236,7 +245,7 @@ void GeometryData::createPerlinCircle(std::vector<Vector2>* verts, std::vector<u
 		(*verts)[i].y = -sin(u * 2.0f * PI);
 		(*inds)[i] = i;
 		dr = noiseFilter.evaluate((*verts)[i]);
-		(*verts)[i] = (1 + dr) * (*verts)[i];
+		(*verts)[i] *= 1.0f + dr;
 	}
 }
 

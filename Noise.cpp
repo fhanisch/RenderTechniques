@@ -26,6 +26,13 @@ float Noise::getRandomNumber2D(Vector2 r, unsigned int seedOffset) {
 	return dis(gen);
 }
 
+float Noise::getRandomNumber3D(Vector3 r, unsigned int seedOffset) {
+	float f = dot(r, Vector3(12.9898f, 78.233f, 189.39581f));
+	unsigned int* _seed = reinterpret_cast<unsigned int*>(&f);
+	gen.seed(*_seed + seedOffset + seed);
+	return dis(gen);
+}
+
 float Noise::perlinNoise1D(float x) {
 	float p = floor(x);
 	x = x - p;
@@ -70,6 +77,55 @@ float Noise::perlinNoise2D(Vector2 r) {
 	return w;
 }
 
+float Noise::perlinNoise3D(Vector3 r) {
+	Vector3 p = floor(r);
+	r = r - p; 
+
+	Vector3 cubePoint0 = Vector3(0.0f, 0.0f, 0.0f);
+	Vector3 cubePoint1 = Vector3(1.0f, 0.0f, 0.0f);
+	Vector3 cubePoint2 = Vector3(0.0f, 1.0f, 0.0f);
+	Vector3 cubePoint3 = Vector3(1.0f, 1.0f, 0.0f);
+	Vector3 cubePoint4 = Vector3(0.0f, 0.0f, 1.0f);
+	Vector3 cubePoint5 = Vector3(1.0f, 0.0f, 1.0f);
+	Vector3 cubePoint6 = Vector3(0.0f, 1.0f, 1.0f);
+	Vector3 cubePoint7 = Vector3(1.0f, 1.0f, 1.0f);
+
+	Vector3 g_000 = Vector3(getRandomNumber3D(p + cubePoint0, seed_u), getRandomNumber3D(p + cubePoint0, seed_v), getRandomNumber3D(p + cubePoint0, seed_w));
+	Vector3 g_100 = Vector3(getRandomNumber3D(p + cubePoint1, seed_u), getRandomNumber3D(p + cubePoint1, seed_v), getRandomNumber3D(p + cubePoint1, seed_w));
+	Vector3 g_010 = Vector3(getRandomNumber3D(p + cubePoint2, seed_u), getRandomNumber3D(p + cubePoint2, seed_v), getRandomNumber3D(p + cubePoint2, seed_w));
+	Vector3 g_110 = Vector3(getRandomNumber3D(p + cubePoint3, seed_u), getRandomNumber3D(p + cubePoint3, seed_v), getRandomNumber3D(p + cubePoint3, seed_w));
+	Vector3 g_001 = Vector3(getRandomNumber3D(p + cubePoint4, seed_u), getRandomNumber3D(p + cubePoint4, seed_v), getRandomNumber3D(p + cubePoint4, seed_w));
+	Vector3 g_101 = Vector3(getRandomNumber3D(p + cubePoint5, seed_u), getRandomNumber3D(p + cubePoint5, seed_v), getRandomNumber3D(p + cubePoint5, seed_w));
+	Vector3 g_011 = Vector3(getRandomNumber3D(p + cubePoint6, seed_u), getRandomNumber3D(p + cubePoint6, seed_v), getRandomNumber3D(p + cubePoint6, seed_w));
+	Vector3 g_111 = Vector3(getRandomNumber3D(p + cubePoint7, seed_u), getRandomNumber3D(p + cubePoint7, seed_v), getRandomNumber3D(p + cubePoint7, seed_w));
+
+	float w_000 = dot(g_000, r - cubePoint0);
+	float w_100 = dot(g_100, r - cubePoint1);
+	float w_010 = dot(g_010, r - cubePoint2);
+	float w_110 = dot(g_110, r - cubePoint3);
+	float w_001 = dot(g_001, r - cubePoint4);
+	float w_101 = dot(g_101, r - cubePoint5);
+	float w_011 = dot(g_011, r - cubePoint6);
+	float w_111 = dot(g_111, r - cubePoint7);
+
+	// Überblendungsfunktion: s(x) = 10x^3-15x^4+6x^5
+	float s_x = pow(r.x, 3.0f) * (r.x * (r.x * 6.0f - 15.0f) + 10.0f);
+	float s_y = pow(r.y, 3.0f) * (r.y * (r.y * 6.0f - 15.0f) + 10.0f);
+	float s_z = pow(r.z, 3.0f) * (r.z * (r.z * 6.0f - 15.0f) + 10.0f);
+
+	float w_00 = (1.0f - s_x) * w_000 + s_x * w_100;
+	float w_10 = (1.0f - s_x) * w_010 + s_x * w_110;
+	float w_01 = (1.0f - s_x) * w_001 + s_x * w_101;
+	float w_11 = (1.0f - s_x) * w_011 + s_x * w_111;
+
+	float w_0 = (1.0f - s_y) * w_00 + s_y * w_10;
+	float w_1 = (1.0f - s_y) * w_01 + s_y * w_11;
+
+	float w = (1.0f - s_z) * w_0 + s_z * w_1;
+
+	return w;
+}
+
 NoiseFilter::NoiseFilter(unsigned int _seed) {
 	noise = Noise(_seed);
 }
@@ -101,6 +157,21 @@ float NoiseFilter::evaluate(Vector2 r) {
 
 	for (int i = 0; i < settings.numLayers; i++) {
 		float v = noise.perlinNoise2D(frequency * r);
+		noiseValue += (v + 1.0f) * 0.5f * amplitude; // Werte zwischen [0,1]
+		frequency *= 2.0f;
+		amplitude *= 0.5f;
+	}
+	noiseValue = max(0.0f, noiseValue - settings.minValue);
+	return noiseValue * settings.strength;
+}
+
+float NoiseFilter::evaluate(Vector3 r) {
+	float noiseValue = 0.0f;
+	float amplitude = 1.0f;
+	float frequency = settings.baseRoughness;
+
+	for (int i = 0; i < settings.numLayers; i++) {
+		float v = noise.perlinNoise3D(frequency * r);
 		noiseValue += (v + 1.0f) * 0.5f * amplitude; // Werte zwischen [0,1]
 		frequency *= 2.0f;
 		amplitude *= 0.5f;

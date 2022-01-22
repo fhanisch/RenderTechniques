@@ -94,7 +94,7 @@ void RenderScene::createGeometryData() {
 	geoData.createData("Cube", GEO_CUBE);
 	geoData.createData("CubeSphere", GEO_CUBE_SPHERE);
 	geoData.createData("CubeSpherePatches", GEO_CUBE_SPHERE_PATCHES, 21);
-	geoData.createData("CubeSphereTerrain", GEO_CUBE_SPHERE_TERRAIN, 3);
+	geoData.createData("CubeSphereTerrain", GEO_CUBE_SPHERE_TERRAIN, 101);
 	geoData.createData("Perlin1DVertices", GEO_PERLIN_1D, 1001);
 	geoData.createData("PerlinCircleVertices", GEO_PERLIN_CIRCLE, 1001);
 	geoData.createData("Terrain2D", GEO_TERRAIN_2D, 101);

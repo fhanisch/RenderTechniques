@@ -11,6 +11,7 @@ class Noise {
 	std::uniform_real_distribution<float> dis;
 	float getRandomNumber1D(float x, unsigned int seedOffset);
 	float getRandomNumber2D(Vector2 r, unsigned int seedOffset);
+	float getRandomNumber3D(Vector3 r, unsigned int seedOffset);
 public:
 	Noise();
 	Noise(unsigned int _seed);

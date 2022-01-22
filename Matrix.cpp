@@ -36,6 +36,18 @@ float& Vector2::operator[](int index) {
 	return ((float*)this)[index];
 }
 
+Vector2& Vector2::operator=(const Vector2& rhs) {
+	x = rhs.x;
+	y = rhs.y;
+	return *this;
+}
+
+Vector2& Vector2::operator*=(const float rhs) {
+	x *= rhs;
+	y *= rhs;
+	return *this;
+}
+
 Vector2 floor(Vector2 r) {
 	return Vector2(floor(r.x), floor(r.y));
 }
@@ -123,6 +135,13 @@ Vector3& Vector3::operator=(const Vector3& rhs) {
 	return *this;
 }
 
+Vector3& Vector3::operator*=(const float rhs) {
+	x *= rhs;
+	y *= rhs;
+	z *= rhs;
+	return *this;
+}
+
 float& Vector3::operator[](int index) {
 	return ((float*)this)[index];
 }
@@ -138,6 +157,14 @@ Vector3 normalize(Vector3 in) {
 	retVal.y = in.y / l;
 	retVal.z = in.z / l;
 	return retVal;
+}
+
+Vector3 floor(Vector3 r) {
+	return Vector3(floor(r.x), floor(r.y), floor(r.z));
+}
+
+float dot(const Vector3& lhs, const Vector3& rhs) {
+	return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
 Vector3 operator+(const Vector3& lhs, const float rhs) {

@@ -133,7 +133,6 @@ void main() {
 	outNoiseValue = noiseValue;
 
 	r *= MyValue.radius * (1.0 + elevation);
-	n = normalize(n);
 
 	fragColor = vec4(outColor, 1.0);
 	texCoords = vec2(5.0*u, 5.0*v);

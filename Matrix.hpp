@@ -11,6 +11,8 @@ struct Vector2 {
 	Vector2(float x, float y);
 	Vector2(float v[2]);
 	float& operator[](int index);
+	Vector2& operator=(const Vector2& rhs);
+	Vector2& operator*=(const float rhs);
 };
 
 Vector2 floor(Vector2 r);
@@ -33,11 +35,14 @@ struct Vector3 {
 	void print();
 	float length();
 	Vector3& operator=(const Vector3& rhs);
+	Vector3& operator*=(const float rhs);
 	float& operator[](int index);
 	const float& operator[](int index) const;
 };
 
 Vector3 normalize(Vector3 in);
+Vector3 floor(Vector3 r);
+float dot(const Vector3& lhs, const Vector3& rhs);
 Vector3 operator+(const Vector3& lhs, const float rhs);
 Vector3 operator+(const float lhs, const Vector3& rhs);
 Vector3 operator+(const Vector3& lhs, const Vector3& rhs);
