@@ -23,10 +23,17 @@ public:
 struct NoiseSettings {
 	int numLayers = 1;
 	float baseRoughness = 1.0f;
-	float roughness = 0.5f;
+	float roughness = 2.0f;
 	float persistence = 0.5f;
 	float strength = 1.0f;
 	float minValue = 0.0f;
+};
+
+struct NoiseLayer {
+	bool enabled = true;
+	bool useFirstLayerAsMask = true;
+	NoiseSettings noiseSettings;
+	NoiseLayer(NoiseSettings noiseSettings) : noiseSettings(noiseSettings) {}
 };
 
 class NoiseFilter {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "RenderObject.hpp"
+#include "Noise.hpp"
 
 enum GeometryForm {
 	GEO_LINE = 1,
@@ -29,6 +30,19 @@ struct Descriptor {
 	uint32_t indexCount;
 	uint32_t firstIndex;
 	int resolution;
+};
+
+struct ShapeSettings {
+	float planetRadius = 1.0f;
+	std::vector<NoiseLayer> noiseLayer;
+};
+
+class ShapeGenerator {
+	ShapeSettings shapeSettings;
+	std::vector<NoiseFilter> noiseFilter;
+public:
+	ShapeGenerator(ShapeSettings _shapeSettings);
+	Vector3 calcualtePointOnUnitSphere(Vector3 r);
 };
 
 class GeometryData {

@@ -143,8 +143,8 @@ float NoiseFilter::evaluate(float x) {
 	for (int i = 0; i < settings.numLayers; i++) {
 		float v = noise.perlinNoise1D(frequency * x);
 		noiseValue += (v + 1.0f) * 0.5f * amplitude; // Werte zwischen [0,1]
-		frequency *= 2.0f;
-		amplitude *= 0.5f;
+		frequency *= settings.roughness;
+		amplitude *= settings.persistence;
 	}
 	noiseValue = max(0, noiseValue - settings.minValue);
 	return noiseValue * settings.strength;
@@ -158,8 +158,8 @@ float NoiseFilter::evaluate(Vector2 r) {
 	for (int i = 0; i < settings.numLayers; i++) {
 		float v = noise.perlinNoise2D(frequency * r);
 		noiseValue += (v + 1.0f) * 0.5f * amplitude; // Werte zwischen [0,1]
-		frequency *= 2.0f;
-		amplitude *= 0.5f;
+		frequency *= settings.roughness;
+		amplitude *= settings.persistence;
 	}
 	noiseValue = max(0.0f, noiseValue - settings.minValue);
 	return noiseValue * settings.strength;
@@ -173,8 +173,8 @@ float NoiseFilter::evaluate(Vector3 r) {
 	for (int i = 0; i < settings.numLayers; i++) {
 		float v = noise.perlinNoise3D(frequency * r);
 		noiseValue += (v + 1.0f) * 0.5f * amplitude; // Werte zwischen [0,1]
-		frequency *= 2.0f;
-		amplitude *= 0.5f;
+		frequency *= settings.roughness;
+		amplitude *= settings.persistence;
 	}
 	noiseValue = max(0.0f, noiseValue - settings.minValue);
 	return noiseValue * settings.strength;

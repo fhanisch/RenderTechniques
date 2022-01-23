@@ -1,0 +1,4 @@
+*.spv
+*.obj
+x64
+Vulkan.vcxproj*

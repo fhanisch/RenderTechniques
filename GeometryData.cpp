@@ -1,5 +1,32 @@
 #include "GeometryData.hpp"
-#include "Noise.hpp"
+
+ShapeGenerator::ShapeGenerator(ShapeSettings _shapeSettings) {
+	shapeSettings = _shapeSettings;	
+	for (int i = 0; i < shapeSettings.noiseLayer.size(); i++) {
+		noiseFilter.push_back(NoiseFilter(i * 53, shapeSettings.noiseLayer[i].noiseSettings));
+	}
+}
+
+Vector3 ShapeGenerator::calcualtePointOnUnitSphere(Vector3 r) {
+	float firstLayerValue = 0.0f;
+	float elevation = 0.0f;
+
+	if (noiseFilter.size() > 0) {
+		firstLayerValue = noiseFilter[0].evaluate(r);
+		if (shapeSettings.noiseLayer[0].enabled) {
+			elevation = firstLayerValue;
+		}
+	}
+
+	for (int i = 1; i < noiseFilter.size(); i++) {
+		if (shapeSettings.noiseLayer[i].enabled) {
+			float mask = (shapeSettings.noiseLayer[i].useFirstLayerAsMask) ? firstLayerValue : 1;
+			elevation += noiseFilter[i].evaluate(r) * mask;
+		}
+	}
+	
+	return r * shapeSettings.planetRadius * (1.0f + elevation);
+}
 
 GeometryData::GeometryData() {
 	vertices = nullptr;
@@ -169,11 +196,18 @@ void GeometryData::createTerrainFace(std::vector<Mesh>* verts, std::vector<uint1
 }
 
 void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset) {
-	NoiseSettings settings;
-	settings.numLayers = 4;
-	//settings.minValue = 0.9f;
-	settings.strength = 4.0f;
-	NoiseFilter noiseFilter(259, settings);
+	NoiseSettings set1, set2;
+	set1.numLayers = 4;
+	set1.minValue = 0.9f;
+	set1.strength = 1.0f;
+	set2.numLayers = 4;
+	set2.minValue = 0.0f;
+	set2.strength = 0.5f;
+	ShapeSettings shapeSettings;
+	shapeSettings.planetRadius = 2.0f;
+	shapeSettings.noiseLayer.push_back(NoiseLayer(set1));
+	shapeSettings.noiseLayer.push_back(NoiseLayer(set2));
+	ShapeGenerator generator(shapeSettings);
 	int vertexIndex = vertOffset;
 	int triangleIndex = indOffset;
 	float u;
@@ -181,16 +215,14 @@ void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<
 	Vector3 axisA = Vector3(normal.y, normal.z, normal.x);
 	Vector3 axisB = -cross(normal, axisA);
 	Vector3 r;
-	float dr;
-	float radius = 2.0f;
+
 	for (int i = 0; i < resolution; i++) {
 		for (int j = 0; j < resolution; j++) {
 			u = 2.0f * ((float)j / ((float)resolution - 1)) - 1.0f;
 			v = 2.0f * ((float)i / ((float)resolution - 1)) - 1.0f;
 			r = normal + u * axisA + v * axisB;
 			r = normalize(r);
-			dr = noiseFilter.evaluate(r);
-			r *= radius * (1.0f + dr);
+			r = generator.calcualtePointOnUnitSphere(r);
 			(*verts)[vertexIndex].pos = r;
 			(*verts)[vertexIndex].normal = normal;
 			(*verts)[vertexIndex].texCoords.x = (float)j / ((float)resolution - 1);

@@ -155,10 +155,10 @@
 			"GeometryForm": 12,
 			"shader": {
 				"vertexShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/test_shader.vert.spv",
-				"fragmentShaderFileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/shader/test2.frag.spv"
+				"fragmentShaderFileName": "C:/Home/Entwicklung/MyC++Apps/Vulkan/planet.frag.spv"
 			},
 			"texture": {
-				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/texture.jpg"
+				"fileName": "C:/Home/Entwicklung/Vulkan/VulkanLib/assets/textures/moon.png"
 			}
 		},
 		{
