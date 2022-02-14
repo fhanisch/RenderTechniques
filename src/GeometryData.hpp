@@ -39,9 +39,10 @@ struct ShapeSettings {
 
 class ShapeGenerator {
 	ShapeSettings shapeSettings;
-	std::vector<NoiseFilter> noiseFilter;
+	std::vector<NoiseFilter*> noiseFilter;
 public:
 	ShapeGenerator(ShapeSettings _shapeSettings);
+	~ShapeGenerator();
 	Vector3 calcualtePointOnUnitSphere(Vector3 r);
 };
 

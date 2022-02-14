@@ -3,7 +3,14 @@
 ShapeGenerator::ShapeGenerator(ShapeSettings _shapeSettings) {
 	shapeSettings = _shapeSettings;	
 	for (int i = 0; i < shapeSettings.noiseLayer.size(); i++) {
-		noiseFilter.push_back(NoiseFilter(i * 53, shapeSettings.noiseLayer[i].noiseSettings));
+		// TODO: Fallunterscheidung für NoiseFilter: FilterTyp
+		noiseFilter.push_back(new SimpleNoiseFilter(i * 53, (SimpleNoiseSettings*)shapeSettings.noiseLayer[i].noiseSettings));
+	}
+}
+
+ShapeGenerator::~ShapeGenerator() {
+	for (int i = 0; i < noiseFilter.size(); i++) {
+		delete noiseFilter[i];
 	}
 }
 
@@ -11,8 +18,10 @@ Vector3 ShapeGenerator::calcualtePointOnUnitSphere(Vector3 r) {
 	float firstLayerValue = 0.0f;
 	float elevation = 0.0f;
 
+	// TODO: Fallunterscheidung für NoiseFilter: FilterTyp
+
 	if (noiseFilter.size() > 0) {
-		firstLayerValue = noiseFilter[0].evaluate(r);
+		firstLayerValue = ((SimpleNoiseFilter*)noiseFilter[0])->evaluate(r);
 		if (shapeSettings.noiseLayer[0].enabled) {
 			elevation = firstLayerValue;
 		}
@@ -21,7 +30,7 @@ Vector3 ShapeGenerator::calcualtePointOnUnitSphere(Vector3 r) {
 	for (int i = 1; i < noiseFilter.size(); i++) {
 		if (shapeSettings.noiseLayer[i].enabled) {
 			float mask = (shapeSettings.noiseLayer[i].useFirstLayerAsMask) ? firstLayerValue : 1;
-			elevation += noiseFilter[i].evaluate(r) * mask;
+			elevation += ((SimpleNoiseFilter*)noiseFilter[i])->evaluate(r) * mask;
 		}
 	}
 	
@@ -196,17 +205,21 @@ void GeometryData::createTerrainFace(std::vector<Mesh>* verts, std::vector<uint1
 }
 
 void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<uint16_t>* inds, Vector3 normal, int resolution, int vertOffset, int indOffset) {
-	NoiseSettings set1, set2;
+	SimpleNoiseSettings set1, set2;
+	RidgidNoiseSettings set3;
+	set1.filterType = SIMPLE;
 	set1.numLayers = 4;
 	set1.minValue = 0.9f;
 	set1.strength = 1.0f;
+	set2.filterType = SIMPLE;
 	set2.numLayers = 4;
 	set2.minValue = 0.0f;
 	set2.strength = 0.5f;
 	ShapeSettings shapeSettings;
 	shapeSettings.planetRadius = 2.0f;
-	shapeSettings.noiseLayer.push_back(NoiseLayer(set1));
-	shapeSettings.noiseLayer.push_back(NoiseLayer(set2));
+	shapeSettings.noiseLayer.push_back(NoiseLayer(&set1));
+	shapeSettings.noiseLayer.push_back(NoiseLayer(&set2));
+	//shapeSettings.noiseLayer.push_back(NoiseLayer(&set3));
 	ShapeGenerator generator(shapeSettings);
 	int vertexIndex = vertOffset;
 	int triangleIndex = indOffset;
@@ -246,10 +259,10 @@ void GeometryData::createCubeSphereFace(std::vector<Vertex>* verts, std::vector<
 }
 
 void GeometryData::createPerlin1D(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution) {
-	NoiseSettings settings;
+	SimpleNoiseSettings settings;
 	settings.numLayers = 8;
 	settings.minValue = 0.85f;
-	NoiseFilter noiseFilter(66, settings);
+	SimpleNoiseFilter noiseFilter(66, &settings);
 	*verts = std::vector<Vector2>(resolution);
 	*inds = std::vector<uint16_t>(resolution);
 	float x;
@@ -262,11 +275,11 @@ void GeometryData::createPerlin1D(std::vector<Vector2>* verts, std::vector<uint1
 }
 
 void GeometryData::createPerlinCircle(std::vector<Vector2>* verts, std::vector<uint16_t>* inds, int resolution) {
-	NoiseSettings settings;
+	SimpleNoiseSettings settings;
 	settings.numLayers = 4;
 	settings.minValue = 0.9f;
 	settings.strength = 2.0f;
-	NoiseFilter noiseFilter(123, settings);
+	SimpleNoiseFilter noiseFilter(123, &settings);
 	*verts = std::vector<Vector2>(resolution);
 	*inds = std::vector<uint16_t>(resolution);
 	float u;
@@ -286,11 +299,11 @@ void GeometryData::createTerrain2D(std::vector<Vertex>* verts, std::vector<uint1
 	int indSize = 3 * 2 * (resolution - 1) * (resolution - 1);
 	*verts = std::vector<Vertex>(vertSize);
 	*inds = std::vector<uint16_t>(indSize);
-	NoiseSettings settings;
+	SimpleNoiseSettings settings;
 	settings.numLayers = 4;
 	settings.minValue = 0.9f;
 	//settings.strength = 2.0f;
-	NoiseFilter noiseFilter(244, settings);
+	SimpleNoiseFilter noiseFilter(244, &settings);
 	int vertexIndex = 0;
 	int triangleIndex = 0;
 	float u;

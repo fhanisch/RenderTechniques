@@ -126,16 +126,25 @@ float Noise::perlinNoise3D(Vector3 r) {
 	return w;
 }
 
-NoiseFilter::NoiseFilter(unsigned int _seed) {
+NoiseFilter::~NoiseFilter() {
+	std::cout << "Destructor of NoiseFilter" << std::endl;
+}
+
+SimpleNoiseFilter::SimpleNoiseFilter(unsigned int _seed) {
 	noise = Noise(_seed);
 }
 
-NoiseFilter::NoiseFilter(unsigned int _seed, NoiseSettings _settings) {
+SimpleNoiseFilter::SimpleNoiseFilter(unsigned int _seed, SimpleNoiseSettings* _settings) {
 	noise = Noise(_seed);
-	settings = _settings;
+	settings = *_settings;
+	noiseSettings = _settings;
 }
 
-float NoiseFilter::evaluate(float x) {
+SimpleNoiseFilter::~SimpleNoiseFilter() {
+	std::cout << "Destructor of SimpleNoiseFilter" << std::endl;
+}
+
+float SimpleNoiseFilter::evaluate(float x) {
 	float noiseValue = 0.0f;
 	float amplitude = 1.0f;
 	float frequency = settings.baseRoughness;
@@ -150,7 +159,7 @@ float NoiseFilter::evaluate(float x) {
 	return noiseValue * settings.strength;
 }
 
-float NoiseFilter::evaluate(Vector2 r) {
+float SimpleNoiseFilter::evaluate(Vector2 r) {
 	float noiseValue = 0.0f;
 	float amplitude = 1.0f;
 	float frequency = settings.baseRoughness;
@@ -165,7 +174,7 @@ float NoiseFilter::evaluate(Vector2 r) {
 	return noiseValue * settings.strength;
 }
 
-float NoiseFilter::evaluate(Vector3 r) {
+float SimpleNoiseFilter::evaluate(Vector3 r) {
 	float noiseValue = 0.0f;
 	float amplitude = 1.0f;
 	float frequency = settings.baseRoughness;
@@ -178,4 +187,18 @@ float NoiseFilter::evaluate(Vector3 r) {
 	}
 	noiseValue = max(0.0f, noiseValue - settings.minValue);
 	return noiseValue * settings.strength;
+}
+
+RidgidNoiseFilter::RidgidNoiseFilter(unsigned int _seed) {
+	noise = Noise(_seed);
+}
+
+RidgidNoiseFilter::RidgidNoiseFilter(unsigned int _seed, RidgidNoiseSettings* _settings) {
+	noise = Noise(_seed);
+	settings = *_settings;
+	noiseSettings = _settings;
+}
+
+float RidgidNoiseFilter::evaluate(Vector3 r) {
+	return 0;
 }

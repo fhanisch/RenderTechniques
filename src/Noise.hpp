@@ -20,7 +20,13 @@ public:
 	float perlinNoise3D(Vector3 r);
 };
 
+enum FilterType { SIMPLE, RIDGID};
+
 struct NoiseSettings {
+	FilterType filterType;
+};
+
+struct SimpleNoiseSettings : NoiseSettings {
 	int numLayers = 1;
 	float baseRoughness = 1.0f;
 	float roughness = 2.0f;
@@ -29,20 +35,41 @@ struct NoiseSettings {
 	float minValue = 0.0f;
 };
 
+struct RidgidNoiseSettings : SimpleNoiseSettings {
+	float weightMultiplier = 0.8f;
+};
+
 struct NoiseLayer {
 	bool enabled = true;
 	bool useFirstLayerAsMask = true;
-	NoiseSettings noiseSettings;
-	NoiseLayer(NoiseSettings noiseSettings) : noiseSettings(noiseSettings) {}
+	NoiseSettings* noiseSettings;
+	NoiseLayer(NoiseSettings* noiseSettings) : noiseSettings(noiseSettings) {}
 };
 
 class NoiseFilter {
+protected:
+	NoiseSettings* noiseSettings;
 	Noise noise;
-	NoiseSettings settings;
 public:
-	NoiseFilter(unsigned int _seed);
-	NoiseFilter(unsigned int _seed, NoiseSettings _settings);
+	~NoiseFilter();
+	virtual float evaluate(Vector3 r) { return 0; }
+};
+
+class SimpleNoiseFilter : public NoiseFilter {
+	SimpleNoiseSettings settings;
+public:
+	SimpleNoiseFilter(unsigned int _seed);
+	SimpleNoiseFilter(unsigned int _seed, SimpleNoiseSettings* _settings);
+	~SimpleNoiseFilter();
 	float evaluate(float x);
 	float evaluate(Vector2 r);
+	float evaluate(Vector3 r);
+};
+
+class RidgidNoiseFilter : public NoiseFilter {
+	RidgidNoiseSettings settings;
+public:
+	RidgidNoiseFilter(unsigned int _seed);
+	RidgidNoiseFilter(unsigned int _seed, RidgidNoiseSettings* _settings);
 	float evaluate(Vector3 r);
 };
